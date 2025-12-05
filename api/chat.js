@@ -1,65 +1,58 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default async function handler(req, res) {
-  // Permite acesso de qualquer lugar (CORS)
+  // Permite que o site converse com este servidor (CORS)
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  
+  // Verifica se a chave existe no cofre da Vercel
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(500).json({ 
+        reply: "ERRO CRÍTICO: Chave de API não configurada no painel da Vercel.", 
+        vibe_change: 0, 
+        status: "continue" 
+    });
+  }
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-        console.error("ERRO: Chave GEMINI_API_KEY não encontrada nas variáveis de ambiente.");
-        throw new Error("Chave de API não configurada no Painel da Vercel.");
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    
-    // ATUALIZAÇÃO: Usando um modelo mais estável se o flash der erro, ou garantindo a versão correta
-    // Tente 'gemini-pro' se o flash continuar dando erro, mas o flash deve funcionar com a lib atualizada.
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const { message, characterPrompt, history, image } = req.body;
 
     const systemPrompt = `
-    ${characterPrompt}
-    
-    CONTEXTO: Jogo de vendas via WhatsApp.
-    OBJETIVO: Responder como o personagem.
-    
-    REGRAS:
-    1. Responda curto (máx 2 frases). Use gírias se o personagem usar.
-    2. Avalie a resposta do usuário com [VIBE: +X] ou [VIBE: -X].
-    3. Se a mensagem for "INICIO", apenas dê um "Oi" ou comece a conversa como o personagem faria.
-    4. Retorne APENAS JSON válido.
-
-    FORMATO JSON:
-    {
-      "reply": "Sua resposta...",
-      "vibe_change": 0,
-      "status": "continue"
-    }
+      ${characterPrompt}
+      
+      CONTEXTO: Jogo de vendas pelo WhatsApp.
+      REGRAS:
+      1. Responda curto (máx 2 frases). Use gírias do personagem.
+      2. Avalie a resposta do usuário com [VIBE: +X] ou [VIBE: -X].
+      3. Se fechar venda use status "won", se perder use "lost".
+      
+      FORMATO JSON OBRIGATÓRIO:
+      { "reply": "texto", "vibe_change": 0, "status": "continue" }
     `;
 
     const parts = [{ text: systemPrompt }];
-    
-    // Proteção contra histórico mal formatado
-    if (history && Array.isArray(history)) {
+
+    // Histórico
+    if (history && history.length) {
         history.slice(-6).forEach(h => {
-            if (h && h.parts && h.parts[0] && h.parts[0].text) {
+             // Proteção contra histórico vazio
+             if(h.parts && h.parts[0] && h.parts[0].text) {
                 parts.push({ text: `[${h.role}]: ${h.parts[0].text}` });
-            }
+             }
         });
     }
 
-    parts.push({ text: `[Vendedora]: ${message}` });
+    parts.push({ text: `[Usuário]: ${message}` });
 
     if (image) {
-        parts.push({ inlineData: { mimeType: "image/jpeg", data: image } });
+        parts.push({ inlineData: { mimeType: "image/jpeg", data: image }});
         parts.push({ text: "(Imagem enviada)" });
     }
 
@@ -67,28 +60,26 @@ export default async function handler(req, res) {
     const response = await result.response;
     const text = response.text();
     
-    // Limpeza agressiva para garantir JSON válido
+    // Limpeza para garantir JSON
     const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
     
-    let jsonResponse;
     try {
-        jsonResponse = JSON.parse(jsonStr);
+        const jsonResponse = JSON.parse(jsonStr);
+        res.status(200).json(jsonResponse);
     } catch (e) {
-        console.error("Erro ao fazer parse do JSON da IA:", text);
-        // Fallback se a IA não retornar JSON válido
-        jsonResponse = {
-            reply: jsonStr, // Usa o texto puro como resposta
+        // Se a IA não mandar JSON, usa o texto puro como resposta
+        console.error("IA não mandou JSON:", text);
+        res.status(200).json({
+            reply: text,
             vibe_change: 0,
             status: "continue"
-        };
+        });
     }
-    
-    res.status(200).json(jsonResponse);
 
   } catch (error) {
     console.error("Erro API:", error);
     res.status(500).json({ 
-        reply: `Erro técnico no servidor: ${error.message}`, 
+        reply: `Erro técnico: ${error.message}`, 
         vibe_change: 0, 
         status: "continue" 
     });
