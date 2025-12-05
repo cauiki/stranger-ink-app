@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-    // 1. Configuração CORS
+    // Configurações CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -10,11 +10,30 @@ export default async function handler(req, res) {
 
     try {
         const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) throw new Error("Chave API não configurada");
+        const { message, characterPrompt, history, image, audioTranscript } = req.body;
 
-        const { message, characterPrompt, history, image } = req.body;
+        const SALES_METHODOLOGY = `
+        VOCÊ É O PERSONAGEM DESCRITO ABAIXO (Stranger Things 2025).
+        ${characterPrompt}
+        
+        CENÁRIO: WhatsApp. Você está cotando uma tatuagem ou piercing.
+        
+        DIRETRIZES:
+        1. **Personalidade:** Aja como uma pessoa normal, não um robô. Mantenha os traços do personagem (Ex: Murray paranoico, Erica exigente).
+        2. **Não seja estúpido:** Seja educado, mas difícil. Você valoriza seu dinheiro.
+        3. **Referências:** Você entende do assunto. Se o contexto pedir, diga que vai mandar uma referência usando a tag: [SEND_REF: descrição curta da imagem em ingles].
+        4. **Regra do Sinal ($):** Você SÓ fecha o negócio (status: "won") se o vendedor pedir um SINAL/ADIANTAMENTO ou garantir o agendamento firme. Se ele enrolar, você diz que vai pensar.
+        
+        FORMATO JSON:
+        { 
+            "reply": "Texto curto de zap", 
+            "vibe_change": (Inteiro -5 a +5), 
+            "status": "won" | "lost" | "continue",
+            "deal_value": (Valor R$ se fechar. Ex: 500. Senão 0),
+            "feedback": "Dica curta se ele errar (Ex: Peça o sinal!)"
+        }
+        `;
 
-        // 2. Montagem dos Dados
         const contents = [];
         if (history && Array.isArray(history)) {
             history.forEach(h => {
@@ -27,86 +46,42 @@ export default async function handler(req, res) {
         if (image) {
             const cleanImage = image.includes("base64,") ? image.split("base64,")[1] : image;
             currentParts.push({ inlineData: { mimeType: "image/jpeg", data: cleanImage } });
-            currentParts.push({ text: "(Imagem enviada)" });
+            currentParts.push({ text: "[FOTO ENVIADA]" });
         }
-        currentParts.push({ text: message });
+        
+        // Prioriza a transcrição do áudio se houver
+        const txt = audioTranscript ? `[ÁUDIO]: "${audioTranscript}"` : (message || ".");
+        currentParts.push({ text: txt });
         contents.push({ role: "user", parts: currentParts });
 
-        // === A CORREÇÃO: Estratégia "Viajante do Tempo" ===
-        // Tenta modelos de 2025 primeiro (2.5, 2.0). Se falhar, tenta os antigos.
-        const modelsToTry = [
-            "gemini-2.5-flash", 
-            "gemini-2.0-flash", 
-            "gemini-1.5-flash-latest",
-            "gemini-pro" // O fallback que nunca morre
-        ];
-        
-        let responseData = null;
-        let lastError = null;
+        // Loop de Modelos
+        const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-pro"];
+        let resultData = null;
 
-        for (const modelName of modelsToTry) {
+        for (const model of models) {
             try {
-                // console.log(`Tentando conectar no modelo: ${modelName}...`);
-                const response = await fetch(
-                    `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            contents: contents,
-                            systemInstruction: {
-                                parts: [{ text: `
-                                    ${characterPrompt}
-                                    CONTEXTO: Jogo de vendas Stranger Things.
-                                    REGRAS: Responda curto (máx 2 frases).
-                                    AVALIAÇÃO: [VIBE: +X] ou [VIBE: -X].
-                                    STATUS: "won", "lost" ou "continue".
-                                    FORMATO JSON: { "reply": "...", "vibe_change": 0, "status": "..." }
-                                `}]
-                            },
-                            generationConfig: { responseMimeType: "application/json" }
-                        })
-                    }
-                );
-
-                if (response.ok) {
-                    responseData = await response.json();
-                    break; // Sucesso! Sai do loop e usa esse modelo.
-                } else {
-                    const errTxt = await response.text();
-                    lastError = `Erro ${response.status} no ${modelName}: ${errTxt}`;
-                    // Se for 404 (modelo não existe), continua tentando o próximo da lista
-                    // if (response.status !== 404) console.warn(lastError);
-                }
-            } catch (e) {
-                lastError = e.message;
-            }
+                const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents,
+                        systemInstruction: { parts: [{ text: SALES_METHODOLOGY }] },
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+                if (r.ok) { resultData = await r.json(); break; }
+            } catch (e) {}
         }
 
-        if (!responseData) throw new Error(`Todos os modelos falharam. Último erro: ${lastError}`);
+        if (!resultData) throw new Error("IA muda.");
 
-        // 3. Processa Resposta
-        let textResponse = responseData.candidates?.[0]?.content?.parts?.[0]?.text;
+        let rawTxt = resultData.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        const jsonStr = rawTxt.replace(/```json/g, '').replace(/```/g, '').trim();
         
-        // Fallback e Limpeza de JSON
-        if (!textResponse) textResponse = '{ "reply": "...", "vibe_change": 0, "status": "continue" }';
-        const jsonStr = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-        
-        let jsonResponse;
-        try {
-            jsonResponse = JSON.parse(jsonStr);
-        } catch (e) {
-            jsonResponse = { reply: jsonStr, vibe_change: 0, status: "continue" };
-        }
-
-        res.status(200).json(jsonResponse);
+        res.status(200).json(JSON.parse(jsonStr));
 
     } catch (error) {
-        console.error("ERRO FATAL:", error);
-        res.status(500).json({ 
-            reply: `Interferência do Mundo Invertido... (${error.message})`, 
-            vibe_change: 0, 
-            status: "continue" 
-        });
+        console.error(error);
+        res.status(500).json({ reply: "Sinal caindo...", status: "continue" });
     }
 }

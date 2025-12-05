@@ -3,292 +3,520 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0b141a">
-    <title>Stranger Ink - A Casa Ink Hub</title>
-    
+    <meta name="theme-color" content="#111b21">
+    <title>Stranger Ink Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500&family=Bebas+Neue&family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="Logo.png">
-
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&family=Oswald:wght@500&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-app: #0b141a; --bg-header: #202c33; --bg-input: #202c33;
-            --bubble-in: #202c33; --bubble-out: #005c4b; --accent: #00a884;
-            --text-main: #e9edef; --text-sec: #8696a0; --neon-red: #ff0033;
-            --arcade-font: 'Press Start 2P', cursive;
+            --bg-list: #111b21; --bg-header: #202c33; --bg-chat: #0b141a;
+            --item-hover: #202c33; --accent: #00a884; --text-main: #e9edef;
+            --text-sec: #8696a0; --bubble-in: #202c33; --bubble-out: #005c4b;
+            --neon-red: #ff3b30;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Heebo', sans-serif; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Heebo', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #000; height: 100dvh; display: flex; justify-content: center; overflow: hidden; }
+
+        #app-frame { 
+            width: 100%; max-width: 500px; height: 100%; background: var(--bg-list); 
+            position: relative; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.7);
+        }
+
+        /* === TELA INICIAL === */
+        #start-screen {
+            position: absolute; inset: 0; z-index: 999;
+            background: url('Tela Inicial.jpg') no-repeat center center / cover;
+            display: flex; flex-direction: column; align-items: center;
+        }
         
-        body { background-color: #000; height: 100dvh; width: 100vw; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .btn-start-top {
+            position: absolute; top: 40px; 
+            background: rgba(255, 0, 0, 0.4); color: #fff; border: 2px solid var(--neon-red);
+            padding: 10px 35px; border-radius: 25px; font-family: 'Oswald'; font-size: 1.1rem;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
+            box-shadow: 0 0 20px var(--neon-red);
+            animation: blink 0.6s infinite alternate;
+            backdrop-filter: blur(5px);
+        }
+        @keyframes blink { from { opacity: 1; transform: scale(1); } to { opacity: 0.7; transform: scale(0.95); } }
         
-        #app-frame { width: 100%; max-width: 500px; height: 100%; background-color: var(--bg-app); position: relative; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .input-name {
+            position: absolute; bottom: 100px; width: 80%; text-align: center;
+            background: rgba(0,0,0,0.7); border: 1px solid #555; color: #fff; padding: 12px;
+            border-radius: 10px; font-size: 1.1rem;
+        }
 
-        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        /* === MENU LISTA (WhatsApp Business) === */
+        #chat-list-screen { flex: 1; display: flex; flex-direction: column; background: var(--bg-list); }
         
-        .logo-container { width: 80%; max-width: 400px; margin-bottom: 40px; }
-        .logo-container img { width: 100%; display: block; filter: drop-shadow(0 0 15px var(--neon-red)); }
-
-        .btn-start {
-            background: var(--neon-red); color: #000; border: none; padding: 20px 50px;
-            font-family: 'Bebas Neue', cursive; font-size: 3rem; letter-spacing: 2px;
-            cursor: pointer; border-radius: 10px; box-shadow: 0 0 25px var(--neon-red);
-            animation: blink 0.5s infinite alternate; text-transform: uppercase;
+        .wa-header {
+            height: 60px; background: var(--bg-header); padding: 0 15px;
+            display: flex; align-items: center; justify-content: space-between;
+            color: var(--text-sec); border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        @keyframes blink { from { opacity: 1; } to { opacity: 0.7; } }
+        .timer-display { color: var(--neon-red); font-weight: bold; font-family: monospace; border: 1px solid var(--neon-red); padding: 2px 8px; border-radius: 4px; }
 
-        .arcade-input {
-            background: transparent; border: 3px solid var(--neon-red); color: var(--neon-red);
-            font-family: var(--arcade-font); font-size: 1.2rem; padding: 15px; text-align: center;
-            width: 80%; text-transform: uppercase; margin: 20px 0; outline: none;
-            box-shadow: 0 0 10px var(--neon-red);
+        .tabs { display: flex; height: 45px; align-items: center; background: var(--bg-header); color: var(--text-sec); font-weight: 500; font-size: 0.9rem; }
+        .tab { flex: 1; text-align: center; padding: 12px; border-bottom: 3px solid transparent; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; font-weight: bold; }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        .chat-list { flex: 1; overflow-y: auto; }
+        .chat-item {
+            display: flex; align-items: center; padding: 12px 15px; cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05); position: relative;
         }
+        .chat-item:active { background: var(--item-hover); }
+        
+        .ci-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px; background: #333; }
+        .ci-info { flex: 1; overflow: hidden; }
+        .ci-top { display: flex; justify-content: space-between; margin-bottom: 3px; }
+        .ci-name { color: var(--text-main); font-weight: 500; font-size: 1rem; }
+        .ci-time { color: var(--text-sec); font-size: 0.75rem; }
+        .ci-msg { color: var(--text-sec); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; }
+        
+        .badge { background: var(--accent); color: #000; font-size: 0.75rem; font-weight: bold; min-width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; padding: 0 5px; animation: pop 0.3s; }
+        @keyframes pop { from{transform:scale(0)} to{transform:scale(1)} }
 
-        .ranking-list {
-            width: 90%; background: #111; border: 2px solid var(--accent); padding: 15px;
-            margin: 20px 0; max-height: 40%; overflow-y: auto; font-family: var(--arcade-font);
+        /* === TELA DE CHAT === */
+        #chat-detail-screen {
+            position: absolute; inset: 0; background: #0b141a; z-index: 100;
+            display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .rank-row { display: flex; justify-content: space-between; color: #fff; font-size: 0.7rem; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px; }
-        .rank-1 { color: #ffd700; }
-
-        header { background: var(--bg-header); height: 65px; padding: 0 15px; display: flex; align-items: center; z-index: 10; flex-shrink: 0; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin: 0 12px; }
-        .info { flex: 1; color: var(--text-main); } .name { font-weight: 600; } .status { font-size: 0.8rem; color: var(--accent); }
-        .icons { display: flex; gap: 20px; color: #fff; font-size: 1.2rem; }
-
-        .stats-bar {
-            background: rgba(0,0,0,0.8); color: #fff; padding: 8px 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--neon-red); flex-shrink: 0; font-family: var(--arcade-font); font-size: 0.7rem;
+        #chat-detail-screen.active { transform: translateX(0); }
+        
+        .chat-header { background: var(--bg-header); padding: 5px 10px; display: flex; align-items: center; gap: 10px; height: 60px; }
+        .active-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer; }
+        
+        .chat-area {
+            flex: 1; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            background-color: #0b141a; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px;
         }
-        .timer-warning { color: var(--neon-red); animation: blink 0.3s infinite; }
-
-        #chat-container { flex: 1; background: url('Fundo do WhatsApp.jpg') repeat; background-size: cover; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { max-width: 80%; padding: 10px; border-radius: 10px; color: #fff; font-size: 0.95rem; position: relative; word-wrap: break-word; }
+        
+        .msg { max-width: 80%; padding: 8px 10px; border-radius: 8px; font-size: 0.95rem; color: #fff; position: relative; word-wrap: break-word; line-height: 1.4; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
         .incoming { align-self: flex-start; background: var(--bubble-in); border-top-left-radius: 0; }
         .outgoing { align-self: flex-end; background: var(--bubble-out); border-top-right-radius: 0; }
-        .msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
-        .msg-meta { font-size: 0.7rem; color: rgba(255,255,255,0.6); text-align: right; margin-top: 4px; }
+        .msg img { max-width: 100%; border-radius: 6px; margin-top: 5px; }
+        .msg-time { font-size: 0.65rem; color: rgba(255,255,255,0.6); text-align: right; margin-top: 2px; }
 
-        #input-area { background: var(--bg-header); padding: 10px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
-        .input-wrapper { flex: 1; background: #2a3942; border-radius: 24px; display: flex; align-items: center; padding: 8px 15px; }
-        #message-input { flex: 1; background: transparent; border: none; color: white; font-size: 1rem; outline: none; }
-        .mic-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        /* Audio Player Style */
+        .audio-player { display: flex; align-items: center; gap: 10px; padding: 5px 0; min-width: 140px; }
+        .play-icon { width: 30px; height: 30px; background: rgba(0,0,0,0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+
+        /* INPUT */
+        .input-bar { background: var(--bg-header); padding: 5px 10px; display: flex; align-items: center; gap: 8px; min-height: 60px; }
+        .input-box { flex: 1; background: #2a3942; border-radius: 20px; padding: 9px 12px; display: flex; align-items: center; }
+        .input-field { background: transparent; border: none; color: #fff; font-size: 1rem; width: 100%; outline: none; }
+        .mic-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: #fff; transition: 0.2s; }
+        .mic-btn.rec { background: var(--neon-red); animation: pulse 1s infinite; }
+
+        /* MODAL PERFIL */
+        #profile-modal {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        #profile-modal.open { opacity: 1; pointer-events: all; }
+        #modal-img { width: 100vw; max-width: 350px; aspect-ratio: 1/1; object-fit: cover; border: 2px solid var(--accent); }
 
         .hidden { display: none !important; }
+        #toast { position: absolute; top: 110px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 10px 20px; border-radius: 20px; z-index: 150; opacity: 0; transition: 0.3s; pointer-events: none; width: 90%; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
-    <div id="app-frame">
-        <div id="start-screen" class="full-screen">
-            <div class="logo-container"><img src="Logo.png" alt="Logo"></div>
-            <button class="btn-start" onclick="irParaNome()">COMEÇAR</button>
-        </div>
-        <div id="name-screen" class="full-screen hidden">
-            <h2 style="color:var(--neon-red); font-family:var(--arcade-font)">QUEM É VOCÊ?</h2>
-            <input type="text" id="player-name" class="arcade-input" maxlength="10" placeholder="SEU NOME">
-            <button class="btn-start" style="font-size:1.5rem; padding:15px 40px" onclick="iniciarJogo()">JOGAR</button>
-        </div>
-        <div id="result-screen" class="full-screen hidden">
-            <h1 id="res-title" style="color:#fff; font-family:'Bebas Neue'; font-size:3rem;"></h1>
-            <p id="res-msg" style="color:#ccc; margin-bottom:20px"></p>
-            <div class="ranking-box" id="ranking-list">Carregando...</div>
-            <button onclick="proximoCliente()" class="btn-start" style="font-size:1.2rem; padding:15px; background:var(--accent); animation:none; margin-top:20px">PRÓXIMO</button>
-        </div>
 
-        <header id="app-header" class="hidden">
-            <i class="fas fa-arrow-left back-icon" style="color:#fff; font-size:1.2rem; margin-right:10px; cursor:pointer" onclick="location.reload()"></i>
-            <div class="profile-area">
-                <img id="char-img" class="avatar" src="">
-                <div class="info"><div class="name" id="char-name">...</div><div class="status" id="char-status">online</div></div>
-            </div>
-            <div class="icons"><i class="fas fa-video"></i><i class="fas fa-phone"></i><i class="fas fa-ellipsis-v"></i></div>
-        </header>
-        <div id="stats-bar" class="stats-bar hidden">
-            <div>VIBE: <span id="vibe-val" style="color:#25d366">100%</span></div>
-            <div id="timer-box">ATENDER: 04:00</div>
+<div id="app-frame">
+    <div id="start-screen">
+        <button class="btn-start-top" onclick="startGame()">INICIAR TURNO</button>
+        <div style="position: absolute; bottom: 20px; color: #ccc; font-size: 0.8rem; text-shadow: 1px 1px 2px #000;">
+            META: R$ 2.000,00 | TEMPO: 20 MIN
         </div>
-        <div id="chat-container" class="hidden">
-             <div class="msg system" style="text-align:center; color: gold; font-size: 0.8rem; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 10px; margin: 10px auto; width: 90%;">🔒 As mensagens são protegidas de ponta a ponta.</div>
-        </div>
-        <div id="input-area" class="hidden">
-            <div class="input-wrapper">
-                <i class="far fa-smile" style="color:#8696a0; margin-right:10px"></i>
-                <input type="text" id="message-input" placeholder="Mensagem" autocomplete="off">
-                <label for="img-up"><i class="fas fa-paperclip" style="color:#8696a0; margin-left:10px; cursor:pointer"></i></label>
-                <input type="file" id="img-up" accept="image/*" style="display:none" onchange="enviarImagem(this)">
-                <i class="fas fa-camera" style="color:#8696a0; margin-left:10px"></i>
+        <input type="text" id="player-name" class="input-name" placeholder="Seu Nome">
+    </div>
+
+    <div id="chat-list-screen" class="hidden">
+        <div class="wa-header">
+            <span style="font-weight:bold; font-size:1.3rem; color:var(--text-main)">Ink Hub</span>
+            <div style="display:flex; gap:15px; align-items:center">
+                <span id="total-money" style="color:var(--accent); font-weight:bold">R$ 0</span>
+                <div class="timer-display" id="global-timer">20:00</div>
+                <i class="fas fa-ellipsis-v"></i>
             </div>
-            <button class="mic-btn" id="send-btn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+        <div class="tabs">
+            <div class="tab active">Conversas</div>
+            <div class="tab">Status</div>
+            <div class="tab">Chamadas</div>
+        </div>
+        <div class="chat-list" id="conversations-container"></div>
+    </div>
+
+    <div id="chat-detail-screen">
+        <div class="chat-header">
+            <i class="fas fa-arrow-left" style="color:#fff; padding:10px; cursor:pointer; font-size:1.2rem" onclick="backToList()"></i>
+            <img id="active-avatar" src="" class="active-avatar" onclick="openProfile()">
+            <div style="flex:1; cursor:pointer" onclick="openProfile()">
+                <div id="active-name" style="color:var(--text-main); font-weight:500">Nome</div>
+                <div style="color:var(--text-sec); font-size:0.75rem">online</div>
+            </div>
+            <div style="color:#fff; display:flex; gap:20px; font-size:1.2rem">
+                <i class="fas fa-video"></i>
+                <i class="fas fa-phone"></i>
+            </div>
+        </div>
+        
+        <div class="chat-area" id="messages-area"></div>
+        
+        <div class="input-bar">
+            <div class="input-box">
+                <i class="far fa-smile" style="color:#8696a0; margin-right:10px; font-size:1.3rem"></i>
+                <input type="text" class="input-field" id="msg-input" placeholder="Mensagem" autocomplete="off">
+                <label for="img-up"><i class="fas fa-paperclip" style="color:#8696a0; font-size:1.3rem; margin-left:10px; cursor:pointer; transform:rotate(45deg)"></i></label>
+                <input type="file" id="img-up" hidden accept="image/*" onchange="sendImage(this)">
+                <i class="fas fa-camera" style="color:#8696a0; font-size:1.3rem; margin-left:10px"></i>
+            </div>
+            <div class="mic-btn" id="mic-btn"><i class="fas fa-microphone"></i></div>
         </div>
     </div>
 
-    <!-- LÓGICA -->
-    <script>
-        const PERSONAGENS = [
-            { id: "billy", nome: "Billy Hargrove", img: "Billy Hargrove normal.jpg", win: "Billy Hargrove vitoria.jpg", lose: "Billy Hargrove derrota.jpg", prompt: "Você é Billy Hargrove. Agressivo, rude. Odeia esperar. Se a vendedora for firme, respeite. Se for mole, ataque." },
-            { id: "eleven", nome: "Eleven", img: "Eleven Normal.jpg", win: "Eleven Vitoria.jpg", lose: "Eleven brava.jpg", prompt: "Você é Eleven. Fala pouco. Desconfiada. Valoriza amigos." },
-            { id: "dustin", nome: "Dustin", img: "Dustin Normal.jpg", win: "Dustin vitoria.jpg", lose: "Dustin Derrota.jpg", prompt: "Você é Dustin. Nerd, fala muito, usa gírias de RPG." },
-            { id: "hopper", nome: "Jim Hopper", img: "Jim Hopper Normal.jpg", win: "Jim Hopper Vitoria.jpg", lose: "Jim Hopper derrota.jpg", prompt: "Você é Hopper. Rabugento, impaciente, autoritário." },
-            { id: "eddie", nome: "Eddie Munson", img: "Eddie Munson Normal.jpg", win: "Eddie Munson Vitoria.jpg", lose: "Eddie Munson Derrota.jpg", prompt: "Você é Eddie. Metaleiro, sem grana, tenta troca." },
-             { id: "max", nome: "Max Mayfield", img: "Max Mayfield Normal.jpg", win: "Max Mayfield Vitoria.jpg", lose: "Max Mayfield Derrota.jpg", prompt: "Você é Max. Sarcástica, fechada, desconfiada." },
-            { id: "steve", nome: "Steve Harrington", img: "Steve Harrington normal.jpg", win: "Steve Harrington Vitoria.jpg", lose: "Steve Harrington derrota.jpg", prompt: "Você é Steve. Vaidoso com cabelo, quer algo 'cool'." },
-            { id: "nancy", nome: "Nancy Wheeler", img: "Nancy Wheeler normal.jpg", win: "Nancy Wheeler Vitoria.jpg", lose: "Nancy Wheeler Derrota.jpg", prompt: "Você é Nancy. Investigativa, exigente com detalhes." },
-            { id: "joyce", nome: "Joyce Byers", img: "Joyce Byers normal.jpg", win: "Joyce Byers Vitoria.jpg", lose: "Joyce Byers Derrota.jpg", prompt: "Você é Joyce. Muito ansiosa, preocupada, fala muito." },
-            { id: "lucas", nome: "Lucas Sinclair", img: "Lucas Sinclair Normal.jpg", win: "Lucas Sinclair Vitoria.jpg", lose: "Lucas Sinclair derrota.jpg", prompt: "Você é Lucas. Cético, racional, quer preço justo." }
-        ];
+    <div id="profile-modal" onclick="this.classList.remove('open')">
+        <img id="modal-img" src="">
+    </div>
 
-        let state = { vibe: 100, charIndex: 0, history: [], playerName: "PLAYER", score: 0 };
-        let timer = { int: null, val: 0 };
+    <div id="toast">
+        <img id="toast-img" style="width:35px; height:35px; border-radius:50%; object-fit:cover">
+        <div style="flex:1">
+            <div id="toast-title" style="font-weight:bold; font-size:0.9rem">Nome</div>
+            <div id="toast-msg" style="font-size:0.8rem; color:#ccc">Mensagem...</div>
+        </div>
+    </div>
+</div>
 
-        function irParaNome() { document.getElementById('start-screen').classList.add('hidden'); document.getElementById('name-screen').classList.remove('hidden'); }
+<script>
+    // === BASE DE DADOS COMPLETA ===
+    const ROSTER = [
+        {id:"eleven", name:"Eleven", req:"Tatuar '011' ou Waffle. Tímida."},
+        {id:"mike", name:"Mike Wheeler", req:"Tatuar D20. Líder, protetor."},
+        {id:"dustin", name:"Dustin Henderson", req:"Tatuar 'Never Ending Story'. Nerd."},
+        {id:"lucas", name:"Lucas Sinclair", req:"Tatuar Estilingue. Cético."},
+        {id:"will", name:"Will Byers", req:"Tatuar desenho do Mind Flayer."},
+        {id:"max", name:"Max Mayfield", req:"Tatuar Skate. Sarcástica."},
+        {id:"steve", name:"Steve Harrington", req:"Tatuar Taco com Pregos. Vaidoso."},
+        {id:"nancy", name:"Nancy Wheeler", req:"Tatuar Arma. Investigativa."},
+        {id:"jonathan", name:"Jonathan Byers", req:"Tatuar Câmera. Introvertido."},
+        {id:"joyce", name:"Joyce Byers", req:"Tatuar Luzes. Ansiosa."},
+        {id:"hopper", name:"Jim Hopper", req:"Cobrir cicatriz. Rabugento."},
+        {id:"robin", name:"Robin Buckley", req:"Tatuar Tuba. Tagarela."},
+        {id:"erica", name:"Erica Sinclair", req:"Piercing. Exige VIP."},
+        {id:"murray", name:"Murray Bauman", req:"Tatuar Código Russo. Paranoico."},
+        {id:"billy", name:"Billy Hargrove", req:"Tatuar Caveira. Agressivo."},
+        {id:"eddie", name:"Eddie Munson", req:"Tatuar Hellfire Club. Metaleiro."},
+        {id:"bob", name:"Bob Newby", req:"Tatuar Super-Herói. Gente boa."},
+        {id:"brenner", name:"Dr. Brenner", req:"Tatuar Número. Frio."},
+        {id:"owens", name:"Dr. Owens", req:"Tatuar Discreta. Diplomático."},
+        {id:"barb", name:"Barb Holland", req:"Tatuar Pequena. Insegura."},
+        {id:"karen", name:"Karen Wheeler", req:"Tatuar Cosmética. Flerta."},
+        {id:"ted", name:"Ted Wheeler", req:"Não quer. Reclama."},
+        {id:"holly", name:"Holly Wheeler", req:"Tatuar Temporária. Criança."},
+        {id:"argyle", name:"Argyle", req:"Tatuar Pizza. Chapado."},
+        {id:"enzo", name:"Dmitri Antonov", req:"Tatuar Lealdade. Russo."},
+        {id:"yuri", name:"Yuri Ismaylov", req:"Tatuar Manteiga de Amendoim."},
+        {id:"chrissy", name:"Chrissy Cunningham", req:"Piercing Umbigo. Assustada."},
+        {id:"jason", name:"Jason Carver", req:"Tatuar Basquete. Arrogante."},
+        {id:"vickie", name:"Vickie", req:"Tatuar Clarinete. Nervosa."},
+        {id:"suzie", name:"Suzie Bingham", req:"Tatuar Matemática. Canta."},
+        {id:"clarke", name:"Sr. Clarke", req:"Tatuar Átomo. Professor."},
+        {id:"kay", name:"Dra. Kay", req:"Tatuar Simbolo. Cientista."},
+        {id:"kali", name:"Kali (008)", req:"Tatuar Punk. Rebelde."},
+        {id:"alexei", name:"Alexei", req:"Tatuar Cereja. Infantil."},
+        {id:"grigori", name:"Grigori", req:"Tatuar Militar. Exterminador."},
+        {id:"kline", name:"Prefeito Kline", req:"Tatuar Patriota. Corrupto."},
+        {id:"sullivan", name:"Cel. Sullivan", req:"Tatuar Exército. Hostil."},
+        {id:"lonnie", name:"Lonnie Byers", req:"Tatuar Ruim. Bêbado."},
+        {id:"terry", name:"Terry Ives", req:"Tatuar Girassol. Repete."},
+        {id:"claudia", name:"Claudia Henderson", req:"Tatuar Gato. Simpática."},
+        {id:"charles", name:"Charles Sinclair", req:"Tatuar Jornal. Pai sério."},
+        {id:"sue", name:"Sue Sinclair", req:"Tatuar Floral. Mãe."},
+        {id:"victor", name:"Victor Creel", req:"Tatuar Casa. Perturbado."},
+        {id:"virginia", name:"Virginia Creel", req:"Tatuar Anjo. Fantasma."},
+        {id:"fred", name:"Fred Benson", req:"Tatuar Caneta. Medroso."},
+        {id:"patrick", name:"Patrick McKinney", req:"Tatuar Esporte. Popular."},
+        {id:"akers", name:"Ten. Akers", req:"Tatuar Bandeira. Militar."},
+        {id:"turnbow", name:"Derek Turnbow", req:"Tatuar Alvo. Agente."}
+    ].map(c => ({
+        ...c,
+        img: `${c.name}.jpg`, // Tenta local
+        fallback: `https://ui-avatars.com/api/?name=${c.name.replace(' ','+')}&background=random&size=128`, // Fallback
+        prompt: `Você é ${c.name}. Desejo: ${c.req}.`
+    }));
+
+    // === ESTADO ===
+    let activeChats = [];
+    let currentChatId = null;
+    let timer = 1200;
+    let money = 0;
+    let spawnInt = null;
+
+    // === AUDIO ENGINE ===
+    let mediaRecorder;
+    let audioChunks = [];
+
+    // === LÓGICA DO JOGO ===
+    function startGame() {
+        if(!document.getElementById('player-name').value) return alert("Digite seu nome!");
         
-        function iniciarJogo() {
-            const nome = document.getElementById('player-name').value.trim();
-            if(!nome) return alert("Digite seu nome!");
-            state.playerName = nome.toUpperCase();
-            document.getElementById('name-screen').classList.add('hidden');
-            mostrarInterface();
-            carregarPersonagem();
-        }
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('chat-list-screen').classList.remove('hidden');
 
-        function mostrarInterface() {
-            document.getElementById('app-header').classList.remove('hidden');
-            document.getElementById('stats-bar').classList.remove('hidden');
-            document.getElementById('chat-container').classList.remove('hidden');
-            document.getElementById('input-area').classList.remove('hidden');
-        }
+        // Timer Global
+        setInterval(() => {
+            timer--;
+            const m = Math.floor(timer/60).toString().padStart(2,'0');
+            const s = (timer%60).toString().padStart(2,'0');
+            document.getElementById('global-timer').innerText = `${m}:${s}`;
+            if(timer<=0) alert("TEMPO ESGOTADO! Atualize a página.");
+        }, 1000);
 
-        function carregarPersonagem() {
-            const char = PERSONAGENS[state.charIndex];
-            document.getElementById('char-name').innerText = char.nome;
-            document.getElementById('char-img').src = char.img;
-            
-            state.history = [];
-            state.vibe = 100;
-            document.getElementById('vibe-val').innerText = "100%";
-            
-            const chat = document.getElementById('chat-container');
-            chat.innerHTML = '<div class="msg system" style="text-align:center; font-size:0.7rem; color:gold; background:rgba(0,0,0,0.5); padding:5px; border-radius:10px; width:90%; margin:10px auto">🔒 Mensagens protegidas</div>';
-
-            enviarParaIA("INICIO");
-            startTimer(240, "ATENDER");
-        }
-
-        function startTimer(sec, label) {
-            clearInterval(timer.int);
-            timer.val = sec;
-            const el = document.getElementById('timer-box');
-            timer.int = setInterval(() => {
-                timer.val--;
-                const m = Math.floor(timer.val/60).toString().padStart(2,'0');
-                const s = (timer.val%60).toString().padStart(2,'0');
-                el.innerText = `${label}: ${m}:${s}`;
-                el.style.color = timer.val < 60 ? "var(--neon-red)" : "#fff";
-                if(timer.val <= 0) { clearInterval(timer.int); endGame(false); }
-            }, 1000);
-        }
-
-        async function enviarParaIA(text, image=null) {
-            document.getElementById('char-status').innerText = "digitando...";
-            try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ message: text, characterPrompt: PERSONAGENS[state.charIndex].prompt, history: state.history, image })
-                });
-                
-                if (!response.ok) throw new Error(response.statusText);
-                
-                const data = await response.json();
-                
-                document.getElementById('char-status').innerText = "online";
-                let reply = data.reply.replace(/\[.*?\]/g, "").trim();
-                addMsg(reply, 'incoming');
-                
-                if (text !== "INICIO") {
-                     state.history.push({role: "user", parts: [{text}]}, {role: "model", parts: [{text: reply}]});
-                     state.vibe += data.vibe_change;
-                     if(state.vibe > 100) state.vibe = 100;
-                     document.getElementById('vibe-val').innerText = state.vibe + "%";
-                } else {
-                     state.history.push({role: "model", parts: [{text: reply}]});
-                }
-
-                if(data.status === 'won') endGame(true);
-                if(data.status === 'lost' || state.vibe <= 0) endGame(false);
-            } catch(e) { 
-                console.error(e); 
-                addMsg(`Erro: ${e.message}. Verifique chave API na Vercel.`, 'system'); 
-                document.getElementById('char-status').innerText = "online";
-            }
-        }
-
-        function addMsg(html, type) {
-            const div = document.createElement('div'); div.className = `msg ${type}`;
-            const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            div.innerHTML = `${html} <div class="msg-meta">${time} ${type==='outgoing'?'<i class="fas fa-check-double" style="color:#53bdeb"></i>':''}</div>`;
-            const chat = document.getElementById('chat-container');
-            chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
-        }
-
-        const input = document.getElementById('message-input'), btn = document.getElementById('send-btn');
-        btn.addEventListener('click', () => {
-            const val = input.value.trim();
-            if(!val) return;
-            if(document.getElementById('timer-box').innerText.includes("ATENDER")) startTimer(20*60, "FECHAR VENDA");
-            addMsg(val, 'outgoing'); input.value = ''; enviarParaIA(val);
-        });
-        input.addEventListener('keypress', e => { if(e.key==='Enter') btn.click() });
+        // Spawn Inicial e Pressão
+        spawnClient();
+        setTimeout(spawnClient, 2000);
         
-        window.enviarImagem = (inp) => {
-            const file = inp.files[0];
-            if(!file) return;
-            const r = new FileReader();
-            r.onload = e => {
-                addMsg(`<img src="${e.target.result}">`, 'outgoing');
-                enviarParaIA("Analise esta imagem.", e.target.result.split(',')[1]);
-            };
-            r.readAsDataURL(file);
+        spawnInt = setInterval(() => {
+            // Chance de novo cliente a cada 15s
+            if(Math.random() > 0.4) spawnClient();
+        }, 15000);
+
+        setupAudio();
+    }
+
+    function spawnClient() {
+        const available = ROSTER.filter(c => !activeChats.find(ac => ac.id === c.id));
+        if(available.length === 0) return;
+
+        const char = available[Math.floor(Math.random() * available.length)];
+        const newChat = {
+            ...char,
+            history: [],
+            unread: 1,
+            lastMsg: "Oi, gostaria de um orçamento.",
+            lastTime: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
+            status: "pending"
         };
+        newChat.history.push({role: "model", parts: [{text: newChat.lastMsg}]});
+        
+        activeChats.unshift(newChat);
+        renderList();
+        
+        // Notificação
+        const t = document.getElementById('toast');
+        document.getElementById('toast-title').innerText = char.name;
+        document.getElementById('toast-msg').innerText = "Nova mensagem";
+        document.getElementById('toast-img').src = char.img; 
+        document.getElementById('toast-img').onerror = function(){this.src=char.fallback};
+        t.style.opacity = 1;
+        setTimeout(()=>t.style.opacity=0, 3000);
+    }
 
-        async function endGame(win) {
-            clearInterval(timer.int);
-            const char = PERSONAGENS[state.charIndex];
-            const points = win ? (state.vibe * 10) + timer.val : 0;
-            state.score += points;
+    function renderList() {
+        const div = document.getElementById('conversations-container');
+        div.innerHTML = "";
+        activeChats.sort((a,b) => b.unread - a.unread);
 
-            // Ranking Local (Se não tiver Firebase)
-            let r = JSON.parse(localStorage.getItem('rank') || "[]");
-            r.push({nome: state.playerName, pontos: state.score});
-            localStorage.setItem('rank', JSON.stringify(r));
+        activeChats.forEach(chat => {
+            const el = document.createElement('div');
+            el.className = 'chat-item';
+            el.onclick = () => openChat(chat.id);
+            
+            const badge = chat.unread > 0 ? `<div class="badge">${chat.unread}</div>` : '';
+            const statusIcon = chat.status==='won' ? '✅ ' : (chat.status==='lost' ? '❌ ' : '');
+            
+            el.innerHTML = `
+                <img src="${chat.img}" onerror="this.src='${chat.fallback}'" class="ci-avatar">
+                <div class="ci-info">
+                    <div class="ci-top">
+                        <span class="ci-name">${chat.name}</span>
+                        <span class="ci-time">${chat.lastTime}</span>
+                    </div>
+                    <div class="ci-bottom">
+                        <span class="ci-msg" style="${chat.unread>0?'color:#fff;font-weight:bold':''}">${statusIcon}${chat.lastMsg}</span>
+                        ${badge}
+                    </div>
+                </div>
+            `;
+            div.appendChild(el);
+        });
+    }
 
-            setTimeout(() => {
-                const s = document.getElementById('result-screen');
-                s.classList.remove('hidden');
-                document.getElementById('app-header').classList.add('hidden');
-                document.getElementById('chat-container').classList.add('hidden');
-                document.getElementById('input-area').classList.add('hidden');
-                document.getElementById('stats-bar').classList.add('hidden');
+    function openChat(id) {
+        currentChatId = id;
+        const chat = activeChats.find(c => c.id === id);
+        chat.unread = 0;
+        
+        // UI
+        document.getElementById('chat-list-screen').classList.add('hidden');
+        const screen = document.getElementById('chat-detail-screen');
+        screen.classList.remove('hidden');
+        setTimeout(()=>screen.classList.add('active'), 10);
+        
+        document.getElementById('active-name').innerText = chat.name;
+        const img = document.getElementById('active-avatar');
+        img.src = chat.img; img.onerror = () => img.src = chat.fallback;
+        document.getElementById('modal-img').src = img.src;
 
-                document.getElementById('result-img').src = win ? char.win : char.lose;
-                document.getElementById('res-title').innerText = win ? "VENDA FECHADA!" : "PERDEU!";
-                document.getElementById('res-msg').innerText = `Pontos: ${points}`;
-                carregarRanking();
-            }, 1500);
+        const area = document.getElementById('messages-area');
+        area.innerHTML = "";
+        
+        chat.history.forEach(h => {
+            const type = h.role === 'user' ? 'outgoing' : 'incoming';
+            let txt = h.parts[0].text;
+            
+            // Renderizadores Especiais
+            if(txt.includes("[FOTO")) txt = '<i class="fas fa-image"></i> Foto Enviada';
+            if(txt.includes("[ÁUDIO]")) txt = '<i class="fas fa-microphone"></i> Áudio Enviado';
+            if(txt.includes("[PLAY_URL:")) {
+                const url = txt.match(/\[PLAY_URL:(.*?)\]/)[1];
+                txt = `<div class="audio-player"><div class="play-icon" onclick="new Audio('${url}').play()"><i class="fas fa-play"></i></div> 0:05</div>`;
+            }
+            if(txt.includes("SEND_REF")) {
+                // Simula imagem de referência tatuagem
+                const keyword = chat.req.split(' ')[1] || 'tattoo';
+                txt = `<img src="https://source.unsplash.com/random/300x300/?tattoo,${keyword}" style="border-radius:10px; margin-top:5px">`;
+            }
+
+            renderMsg(txt, type);
+        });
+        
+        renderList();
+    }
+
+    function backToList() {
+        const screen = document.getElementById('chat-detail-screen');
+        screen.classList.remove('active');
+        setTimeout(() => {
+            screen.classList.add('hidden');
+            document.getElementById('chat-list-screen').classList.remove('hidden');
+            currentChatId = null;
+        }, 300);
+    }
+
+    function renderMsg(html, type) {
+        const div = document.createElement('div');
+        div.className = `msg ${type}`;
+        div.innerHTML = `${html}<div class="msg-meta">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
+        const area = document.getElementById('messages-area');
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+    }
+
+    // === MENSAGENS E IA ===
+    const inp = document.getElementById('msg-input');
+    inp.addEventListener('keypress', e => { if(e.key==='Enter') send(inp.value); });
+
+    async function send(text, img=null, audioUrl=null, audioTxt=null) {
+        if(!currentChatId) return;
+        const chat = activeChats.find(c => c.id === currentChatId);
+        
+        // UI Local (User)
+        let display = text;
+        if(img) display = `<img src="${img}">`;
+        if(audioUrl) display = `<div class="audio-player"><div class="play-icon" onclick="new Audio('${audioUrl}').play()"><i class="fas fa-play"></i></div> 0:05</div>`;
+        
+        renderMsg(display, 'outgoing');
+        inp.value = '';
+
+        // Histórico (Salva URL do áudio para playback futuro)
+        let logTxt = text || ".";
+        if(img) logTxt = "[FOTO]";
+        if(audioUrl) logTxt = `[PLAY_URL:${audioUrl}] [ÁUDIO]: ${audioTxt||'...'}`;
+        
+        chat.history.push({role: "user", parts: [{text: logTxt}]});
+        chat.lastMsg = img ? "📷 Foto" : (audioUrl ? "🎤 Áudio" : text);
+        
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    message: text,
+                    image: img,
+                    audioTranscript: audioTxt,
+                    characterPrompt: `PERSONAGEM: ${chat.name}. PEDIDO: ${chat.req}`,
+                    history: chat.history
+                })
+            });
+            const data = await res.json();
+            
+            // Processa Resposta
+            let reply = data.reply;
+            if(reply.includes("[SEND_REF")) {
+                const term = reply.split(':')[1]?.replace(']','').trim() || 'tattoo';
+                reply = reply.replace(/\[.*?\]/, "") + `<br><img src="https://source.unsplash.com/random/300x300/?tattoo,${term}" style="border-radius:10px; margin-top:5px">`;
+            }
+
+            if(currentChatId === chat.id) renderMsg(reply, 'incoming');
+            else showToast(chat.name, data.reply);
+            
+            chat.history.push({role: "model", parts:[{text: reply}]});
+            chat.lastMsg = data.reply.includes("img") ? "📷 Referência" : data.reply;
+
+            if(data.status === 'won' && chat.status !== 'won') {
+                chat.status = 'won';
+                money += (data.deal_value || 0);
+                document.getElementById('total-money').innerText = `R$ ${money}`;
+                alert(`VENDA FECHADA COM ${chat.name}!\n+ R$ ${data.deal_value}`);
+            }
+
+            renderList();
+
+        } catch(e) { console.error(e); }
+    }
+
+    // === ÁUDIO REAL & UTILITÁRIOS ===
+    function setupAudio() {
+        const btn = document.getElementById('mic-btn');
+        let chunks = [];
+        
+        if (navigator.mediaDevices) {
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
+                    const audioUrl = URL.createObjectURL(blob);
+                    
+                    // Se tiver speech recognition, usa o texto. Senão manda genérico.
+                    let transcript = "Áudio enviado pelo usuário.";
+                    if('webkitSpeechRecognition' in window) {
+                        const r = new webkitSpeechRecognition();
+                        r.lang = 'pt-BR';
+                        r.onresult = e => send(null, null, audioUrl, e.results[0][0].transcript);
+                        r.start(); // Truque rápido pra pegar o texto do que acabou de falar
+                    } else {
+                        send(null, null, audioUrl, transcript);
+                    }
+                };
+            }).catch(e => console.log("Mic error", e));
+
+            btn.onmousedown = () => { chunks = []; mediaRecorder.start(); btn.classList.add('rec'); }
+            btn.onmouseup = () => { mediaRecorder.stop(); btn.classList.remove('rec'); }
+            
+            // Suporte Touch
+            btn.ontouchstart = (e) => { e.preventDefault(); chunks=[]; mediaRecorder.start(); btn.classList.add('rec'); }
+            btn.ontouchend = (e) => { e.preventDefault(); mediaRecorder.stop(); btn.classList.remove('rec'); }
         }
+    }
 
-        function carregarRanking() {
-            const list = document.getElementById('ranking-list');
-            let d = JSON.parse(localStorage.getItem('rank') || "[]").sort((a,b)=>b.pontos-a.pontos).slice(0,5);
-            list.innerHTML = d.map((x,i) => `<div class="rank-row ${i===0?'rank-1':''}"><span class="r-name">${i+1}. ${x.nome}</span><span>${x.pontos}</span></div>`).join('');
+    window.openProfile = () => document.getElementById('profile-modal').classList.add('open');
+    window.sendImage = (el) => {
+        const f = el.files[0];
+        if(f) {
+            const r = new FileReader();
+            r.onload = e => send(null, e.target.result);
+            r.readAsDataURL(f);
         }
-
-        window.proximoCliente = () => {
-            document.getElementById('result-screen').classList.add('hidden');
-            state.charIndex++;
-            if(state.charIndex >= PERSONAGENS.length) state.charIndex = 0;
-            mostrarInterface(); carregarPersonagem();
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
