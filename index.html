@@ -2,271 +2,292 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stranger Ink</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0b141a">
+    <title>Stranger Ink - A Casa Ink Hub</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500&family=Bebas+Neue&family=Press+Start+2P&display=swap" rel="stylesheet">
-    
+    <link rel="icon" type="image/png" href="Logo.png">
+
     <style>
-        /* ESTILO COMPLETO */
-        :root { --bg-app: #0b141a; --bg-header: #202c33; --bubble-in: #202c33; --bubble-out: #005c4b; --accent: #00a884; --text: #e9edef; --red: #ff0033; }
-        body { background: #000; height: 100vh; margin: 0; display: flex; justify-content: center; font-family: 'Heebo', sans-serif; overflow: hidden; }
-        #app { width: 100%; max-width: 500px; height: 100%; background: var(--bg-app); position: relative; display: flex; flex-direction: column; }
+        :root {
+            --bg-app: #0b141a; --bg-header: #202c33; --bg-input: #202c33;
+            --bubble-in: #202c33; --bubble-out: #005c4b; --accent: #00a884;
+            --text-main: #e9edef; --text-sec: #8696a0; --neon-red: #ff0033;
+            --arcade-font: 'Press Start 2P', cursive;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Heebo', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* TELAS */
-        .screen { position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:99; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+        body { background-color: #000; height: 100dvh; width: 100vw; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        
+        #app-frame { width: 100%; max-width: 500px; height: 100%; background-color: var(--bg-app); position: relative; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+
+        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        
+        .logo-container { width: 80%; max-width: 400px; margin-bottom: 40px; }
+        .logo-container img { width: 100%; display: block; filter: drop-shadow(0 0 15px var(--neon-red)); }
+
+        .btn-start {
+            background: var(--neon-red); color: #000; border: none; padding: 20px 50px;
+            font-family: 'Bebas Neue', cursive; font-size: 3rem; letter-spacing: 2px;
+            cursor: pointer; border-radius: 10px; box-shadow: 0 0 25px var(--neon-red);
+            animation: blink 0.5s infinite alternate; text-transform: uppercase;
+        }
+        @keyframes blink { from { opacity: 1; } to { opacity: 0.7; } }
+
+        .arcade-input {
+            background: transparent; border: 3px solid var(--neon-red); color: var(--neon-red);
+            font-family: var(--arcade-font); font-size: 1.2rem; padding: 15px; text-align: center;
+            width: 80%; text-transform: uppercase; margin: 20px 0; outline: none;
+            box-shadow: 0 0 10px var(--neon-red);
+        }
+
+        .ranking-list {
+            width: 90%; background: #111; border: 2px solid var(--accent); padding: 15px;
+            margin: 20px 0; max-height: 40%; overflow-y: auto; font-family: var(--arcade-font);
+        }
+        .rank-row { display: flex; justify-content: space-between; color: #fff; font-size: 0.7rem; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px; }
+        .rank-1 { color: #ffd700; }
+
+        header { background: var(--bg-header); height: 65px; padding: 0 15px; display: flex; align-items: center; z-index: 10; flex-shrink: 0; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin: 0 12px; }
+        .info { flex: 1; color: var(--text-main); } .name { font-weight: 600; } .status { font-size: 0.8rem; color: var(--accent); }
+        .icons { display: flex; gap: 20px; color: #fff; font-size: 1.2rem; }
+
+        .stats-bar {
+            background: rgba(0,0,0,0.8); color: #fff; padding: 8px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--neon-red); flex-shrink: 0; font-family: var(--arcade-font); font-size: 0.7rem;
+        }
+        .timer-warning { color: var(--neon-red); animation: blink 0.3s infinite; }
+
+        #chat-container { flex: 1; background: url('Fundo do WhatsApp.jpg') repeat; background-size: cover; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 80%; padding: 10px; border-radius: 10px; color: #fff; font-size: 0.95rem; position: relative; word-wrap: break-word; }
+        .incoming { align-self: flex-start; background: var(--bubble-in); border-top-left-radius: 0; }
+        .outgoing { align-self: flex-end; background: var(--bubble-out); border-top-right-radius: 0; }
+        .msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+        .msg-meta { font-size: 0.7rem; color: rgba(255,255,255,0.6); text-align: right; margin-top: 4px; }
+
+        #input-area { background: var(--bg-header); padding: 10px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+        .input-wrapper { flex: 1; background: #2a3942; border-radius: 24px; display: flex; align-items: center; padding: 8px 15px; }
+        #message-input { flex: 1; background: transparent; border: none; color: white; font-size: 1rem; outline: none; }
+        .mic-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+
         .hidden { display: none !important; }
-        
-        /* UI ELEMENTOS */
-        .logo { width: 80%; max-width: 300px; margin-bottom: 40px; filter: drop-shadow(0 0 15px var(--red)); }
-        .btn { background: var(--red); color: #000; border: none; padding: 15px 40px; font-family: 'Bebas Neue'; font-size: 2.5rem; border-radius: 10px; cursor: pointer; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.7; } }
-        
-        .input-arcade { background: transparent; border: 2px solid var(--red); color: var(--red); font-family: 'Press Start 2P'; padding: 15px; text-align: center; width: 80%; margin: 20px 0; text-transform: uppercase; }
-        
-        /* CHAT UI */
-        header { background: var(--bg-header); height: 60px; padding: 0 15px; display: flex; align-items: center; justify-content: space-between; color: white; }
-        .profile { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .status-bar { background: rgba(0,0,0,0.8); color: #fff; padding: 5px; text-align: center; font-family: 'Press Start 2P'; font-size: 0.6rem; display: flex; justify-content: space-between; }
-        
-        #chat { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: url('Fundo do WhatsApp.jpg'); background-size: cover; }
-        .msg { max-width: 80%; padding: 10px; border-radius: 10px; color: #fff; font-size: 0.95rem; word-wrap: break-word; }
-        .in { align-self: flex-start; background: var(--bubble-in); }
-        .out { align-self: flex-end; background: var(--bubble-out); }
-        
-        #input-area { background: var(--bg-header); padding: 10px; display: flex; gap: 10px; align-items: center; }
-        #msg-input { flex: 1; background: #2a3942; border: none; padding: 10px; border-radius: 20px; color: white; }
-        .icon { color: #8696a0; font-size: 1.2rem; cursor: pointer; }
-        
-        /* RANKING */
-        .rank-box { width: 90%; background: #111; border: 1px solid var(--accent); padding: 10px; margin: 20px 0; color: #fff; font-family: 'Press Start 2P'; font-size: 0.7rem; text-align: left; }
-        .rank-row { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dashed #333; }
     </style>
 </head>
 <body>
-    <div id="app">
-        <!-- TELA INICIAL -->
-        <div id="s-start" class="screen">
-            <img src="Logo.png" class="logo">
-            <button class="btn" onclick="nav('s-name')">COMEÇAR</button>
+    <div id="app-frame">
+        <div id="start-screen" class="full-screen">
+            <div class="logo-container"><img src="Logo.png" alt="Logo"></div>
+            <button class="btn-start" onclick="irParaNome()">COMEÇAR</button>
+        </div>
+        <div id="name-screen" class="full-screen hidden">
+            <h2 style="color:var(--neon-red); font-family:var(--arcade-font)">QUEM É VOCÊ?</h2>
+            <input type="text" id="player-name" class="arcade-input" maxlength="10" placeholder="SEU NOME">
+            <button class="btn-start" style="font-size:1.5rem; padding:15px 40px" onclick="iniciarJogo()">JOGAR</button>
+        </div>
+        <div id="result-screen" class="full-screen hidden">
+            <h1 id="res-title" style="color:#fff; font-family:'Bebas Neue'; font-size:3rem;"></h1>
+            <p id="res-msg" style="color:#ccc; margin-bottom:20px"></p>
+            <div class="ranking-box" id="ranking-list">Carregando...</div>
+            <button onclick="proximoCliente()" class="btn-start" style="font-size:1.2rem; padding:15px; background:var(--accent); animation:none; margin-top:20px">PRÓXIMO</button>
         </div>
 
-        <!-- TELA NOME -->
-        <div id="s-name" class="screen hidden">
-            <h2 style="color:var(--red); font-family:'Press Start 2P'">QUEM É VOCÊ?</h2>
-            <input type="text" id="p-name" class="input-arcade" maxlength="8">
-            <button class="btn" style="font-size:1.5rem" onclick="startGame()">PLAY</button>
-        </div>
-
-        <!-- TELA RESULTADO -->
-        <div id="s-result" class="screen hidden">
-            <img id="r-img" src="" class="logo" style="width:200px">
-            <h1 id="r-title" style="color:white; font-family:'Bebas Neue'; font-size:3rem"></h1>
-            <div id="r-ranking" class="rank-box">Carregando Ranking...</div>
-            <button class="btn" style="font-size:1.5rem; background:var(--accent)" onclick="nextChar()">PRÓXIMO</button>
-        </div>
-
-        <!-- JOGO -->
-        <header>
-            <div class="profile">
-                <img id="c-img" class="avatar" src="">
-                <div><div id="c-name" style="font-weight:bold">...</div><div id="c-status" style="font-size:0.8rem; color:var(--accent)">online</div></div>
+        <header id="app-header" class="hidden">
+            <i class="fas fa-arrow-left back-icon" style="color:#fff; font-size:1.2rem; margin-right:10px; cursor:pointer" onclick="location.reload()"></i>
+            <div class="profile-area">
+                <img id="char-img" class="avatar" src="">
+                <div class="info"><div class="name" id="char-name">...</div><div class="status" id="char-status">online</div></div>
             </div>
-            <div><i class="fas fa-video"></i> <i class="fas fa-phone"></i></div>
+            <div class="icons"><i class="fas fa-video"></i><i class="fas fa-phone"></i><i class="fas fa-ellipsis-v"></i></div>
         </header>
-        <div class="status-bar">
-            <span>VIBE: <span id="v-val" style="color:var(--accent)">100%</span></span>
-            <span id="timer">04:00</span>
+        <div id="stats-bar" class="stats-bar hidden">
+            <div>VIBE: <span id="vibe-val" style="color:#25d366">100%</span></div>
+            <div id="timer-box">ATENDER: 04:00</div>
         </div>
-        <div id="chat"></div>
-        <div id="input-area">
-            <label for="f-up"><i class="fas fa-paperclip icon"></i></label>
-            <input type="file" id="f-up" hidden onchange="sendImg(this)">
-            <input type="text" id="msg-input" placeholder="Mensagem">
-            <i class="fas fa-paper-plane icon" style="color:var(--accent)" onclick="sendMsg()"></i>
+        <div id="chat-container" class="hidden">
+             <div class="msg system" style="text-align:center; color: gold; font-size: 0.8rem; background: rgba(0,0,0,0.5); padding: 5px; border-radius: 10px; margin: 10px auto; width: 90%;">🔒 As mensagens são protegidas de ponta a ponta.</div>
+        </div>
+        <div id="input-area" class="hidden">
+            <div class="input-wrapper">
+                <i class="far fa-smile" style="color:#8696a0; margin-right:10px"></i>
+                <input type="text" id="message-input" placeholder="Mensagem" autocomplete="off">
+                <label for="img-up"><i class="fas fa-paperclip" style="color:#8696a0; margin-left:10px; cursor:pointer"></i></label>
+                <input type="file" id="img-up" accept="image/*" style="display:none" onchange="enviarImagem(this)">
+                <i class="fas fa-camera" style="color:#8696a0; margin-left:10px"></i>
+            </div>
+            <button class="mic-btn" id="send-btn"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
-    <!-- FIREBASE SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // --- COLE AQUI SUA CONFIG DO FIREBASE (PASSO 3) ---
-        const firebaseConfig = {
-            // Cole as chaves aqui (apiKey, authDomain, etc...)
-        };
-
-        let db;
-        try {
-            if (firebaseConfig.apiKey) {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                window.db = db;
-                window.dbMethods = { collection, addDoc, getDocs, query, orderBy, limit };
-            }
-        } catch(e) { console.log("Firebase Off"); }
-    </script>
-
+    <!-- LÓGICA -->
     <script>
-        const CHARS = [
-            {id:"billy", name:"Billy", img:"Billy Hargrove normal.jpg", w:"Billy Hargrove vitoria.jpg", l:"Billy Hargrove derrota.jpg", p:"Billy Hargrove. Agressivo, rude."},
-            {id:"eleven", name:"Eleven", img:"Eleven Normal.jpg", w:"Eleven Vitoria.jpg", l:"Eleven brava.jpg", p:"Eleven. Fala pouco, desconfiada."},
-            // ... Adicione os outros aqui
+        const PERSONAGENS = [
+            { id: "billy", nome: "Billy Hargrove", img: "Billy Hargrove normal.jpg", win: "Billy Hargrove vitoria.jpg", lose: "Billy Hargrove derrota.jpg", prompt: "Você é Billy Hargrove. Agressivo, rude. Odeia esperar. Se a vendedora for firme, respeite. Se for mole, ataque." },
+            { id: "eleven", nome: "Eleven", img: "Eleven Normal.jpg", win: "Eleven Vitoria.jpg", lose: "Eleven brava.jpg", prompt: "Você é Eleven. Fala pouco. Desconfiada. Valoriza amigos." },
+            { id: "dustin", nome: "Dustin", img: "Dustin Normal.jpg", win: "Dustin vitoria.jpg", lose: "Dustin Derrota.jpg", prompt: "Você é Dustin. Nerd, fala muito, usa gírias de RPG." },
+            { id: "hopper", nome: "Jim Hopper", img: "Jim Hopper Normal.jpg", win: "Jim Hopper Vitoria.jpg", lose: "Jim Hopper derrota.jpg", prompt: "Você é Hopper. Rabugento, impaciente, autoritário." },
+            { id: "eddie", nome: "Eddie Munson", img: "Eddie Munson Normal.jpg", win: "Eddie Munson Vitoria.jpg", lose: "Eddie Munson Derrota.jpg", prompt: "Você é Eddie. Metaleiro, sem grana, tenta troca." },
+             { id: "max", nome: "Max Mayfield", img: "Max Mayfield Normal.jpg", win: "Max Mayfield Vitoria.jpg", lose: "Max Mayfield Derrota.jpg", prompt: "Você é Max. Sarcástica, fechada, desconfiada." },
+            { id: "steve", nome: "Steve Harrington", img: "Steve Harrington normal.jpg", win: "Steve Harrington Vitoria.jpg", lose: "Steve Harrington derrota.jpg", prompt: "Você é Steve. Vaidoso com cabelo, quer algo 'cool'." },
+            { id: "nancy", nome: "Nancy Wheeler", img: "Nancy Wheeler normal.jpg", win: "Nancy Wheeler Vitoria.jpg", lose: "Nancy Wheeler Derrota.jpg", prompt: "Você é Nancy. Investigativa, exigente com detalhes." },
+            { id: "joyce", nome: "Joyce Byers", img: "Joyce Byers normal.jpg", win: "Joyce Byers Vitoria.jpg", lose: "Joyce Byers Derrota.jpg", prompt: "Você é Joyce. Muito ansiosa, preocupada, fala muito." },
+            { id: "lucas", nome: "Lucas Sinclair", img: "Lucas Sinclair Normal.jpg", win: "Lucas Sinclair Vitoria.jpg", lose: "Lucas Sinclair derrota.jpg", prompt: "Você é Lucas. Cético, racional, quer preço justo." }
         ];
+
+        let state = { vibe: 100, charIndex: 0, history: [], playerName: "PLAYER", score: 0 };
+        let timer = { int: null, val: 0 };
+
+        function irParaNome() { document.getElementById('start-screen').classList.add('hidden'); document.getElementById('name-screen').classList.remove('hidden'); }
         
-        let state = { idx: 0, vibe: 100, hist: [], name: "PLAYER", score: 0 };
-        let timerInt;
-
-        function nav(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            if(id) document.getElementById(id).classList.remove('hidden');
+        function iniciarJogo() {
+            const nome = document.getElementById('player-name').value.trim();
+            if(!nome) return alert("Digite seu nome!");
+            state.playerName = nome.toUpperCase();
+            document.getElementById('name-screen').classList.add('hidden');
+            mostrarInterface();
+            carregarPersonagem();
         }
 
-        function startGame() {
-            const n = document.getElementById('p-name').value;
-            if(!n) return alert("Digite um nome!");
-            state.name = n.toUpperCase();
-            nav(null); // Esconde telas cheias
-            loadChar();
+        function mostrarInterface() {
+            document.getElementById('app-header').classList.remove('hidden');
+            document.getElementById('stats-bar').classList.remove('hidden');
+            document.getElementById('chat-container').classList.remove('hidden');
+            document.getElementById('input-area').classList.remove('hidden');
         }
 
-        function loadChar() {
-            const c = CHARS[state.idx];
-            document.getElementById('c-name').innerText = c.name;
-            document.getElementById('c-img').src = c.img;
-            document.getElementById('chat').innerHTML = '<div class="msg system" style="text-align:center; font-size:0.7rem; color:gold; background:rgba(0,0,0,0.5); padding:5px; border-radius:10px; width:90%; margin:10px auto">🔒 Mensagens protegidas</div>';
-            state.hist = []; state.vibe = 100;
-            document.getElementById('v-val').innerText = "100%";
+        function carregarPersonagem() {
+            const char = PERSONAGENS[state.charIndex];
+            document.getElementById('char-name').innerText = char.nome;
+            document.getElementById('char-img').src = char.img;
             
-            // Delay pequeno para garantir que o DOM carregou antes de chamar a API
-            setTimeout(() => {
-                callAI("O cliente abriu o chat. Inicie.");
-            }, 500);
+            state.history = [];
+            state.vibe = 100;
+            document.getElementById('vibe-val').innerText = "100%";
             
-            startTimer(240);
+            const chat = document.getElementById('chat-container');
+            chat.innerHTML = '<div class="msg system" style="text-align:center; font-size:0.7rem; color:gold; background:rgba(0,0,0,0.5); padding:5px; border-radius:10px; width:90%; margin:10px auto">🔒 Mensagens protegidas</div>';
+
+            enviarParaIA("INICIO");
+            startTimer(240, "ATENDER");
         }
 
-        function startTimer(sec) {
-            clearInterval(timerInt);
-            let t = sec;
-            const el = document.getElementById('timer');
-            timerInt = setInterval(() => {
-                t--;
-                el.innerText = new Date(t * 1000).toISOString().substr(14, 5);
-                if(t <= 0) { clearInterval(timerInt); endGame(false); }
+        function startTimer(sec, label) {
+            clearInterval(timer.int);
+            timer.val = sec;
+            const el = document.getElementById('timer-box');
+            timer.int = setInterval(() => {
+                timer.val--;
+                const m = Math.floor(timer.val/60).toString().padStart(2,'0');
+                const s = (timer.val%60).toString().padStart(2,'0');
+                el.innerText = `${label}: ${m}:${s}`;
+                el.style.color = timer.val < 60 ? "var(--neon-red)" : "#fff";
+                if(timer.val <= 0) { clearInterval(timer.int); endGame(false); }
             }, 1000);
         }
 
-        async function callAI(txt, img=null) {
-            document.getElementById('c-status').innerText = "digitando...";
+        async function enviarParaIA(text, image=null) {
+            document.getElementById('char-status').innerText = "digitando...";
             try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST', headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({
-                        message: txt, 
-                        characterPrompt: CHARS[state.idx].p,
-                        history: state.hist,
-                        image: img
-                    })
+                const response = await fetch('/api/chat', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: text, characterPrompt: PERSONAGENS[state.charIndex].prompt, history: state.history, image })
                 });
-                const data = await res.json();
                 
-                document.getElementById('c-status').innerText = "online";
-                addBubble(data.reply.replace(/\[.*?\]/g, ""), 'in');
+                if (!response.ok) throw new Error(response.statusText);
                 
-                if(txt !== "O cliente abriu o chat. Inicie.") {
-                    state.hist.push({role:"user", parts:[{text:txt}]}, {role:"model", parts:[{text:data.reply}]});
-                    state.vibe += data.vibe_change;
-                    document.getElementById('v-val').innerText = state.vibe + "%";
+                const data = await response.json();
+                
+                document.getElementById('char-status').innerText = "online";
+                let reply = data.reply.replace(/\[.*?\]/g, "").trim();
+                addMsg(reply, 'incoming');
+                
+                if (text !== "INICIO") {
+                     state.history.push({role: "user", parts: [{text}]}, {role: "model", parts: [{text: reply}]});
+                     state.vibe += data.vibe_change;
+                     if(state.vibe > 100) state.vibe = 100;
+                     document.getElementById('vibe-val').innerText = state.vibe + "%";
+                } else {
+                     state.history.push({role: "model", parts: [{text: reply}]});
                 }
 
                 if(data.status === 'won') endGame(true);
                 if(data.status === 'lost' || state.vibe <= 0) endGame(false);
             } catch(e) { 
-                console.log(e); 
-                addBubble("Erro de conexão com a IA.", 'in');
+                console.error(e); 
+                addMsg(`Erro: ${e.message}. Verifique chave API na Vercel.`, 'system'); 
+                document.getElementById('char-status').innerText = "online";
             }
         }
 
-        function sendMsg() {
-            const i = document.getElementById('msg-input');
-            if(!i.value) return;
-            addBubble(i.value, 'out');
-            callAI(i.value);
-            i.value = '';
+        function addMsg(html, type) {
+            const div = document.createElement('div'); div.className = `msg ${type}`;
+            const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            div.innerHTML = `${html} <div class="msg-meta">${time} ${type==='outgoing'?'<i class="fas fa-check-double" style="color:#53bdeb"></i>':''}</div>`;
+            const chat = document.getElementById('chat-container');
+            chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
         }
 
-        function sendImg(el) {
-            const f = el.files[0];
+        const input = document.getElementById('message-input'), btn = document.getElementById('send-btn');
+        btn.addEventListener('click', () => {
+            const val = input.value.trim();
+            if(!val) return;
+            if(document.getElementById('timer-box').innerText.includes("ATENDER")) startTimer(20*60, "FECHAR VENDA");
+            addMsg(val, 'outgoing'); input.value = ''; enviarParaIA(val);
+        });
+        input.addEventListener('keypress', e => { if(e.key==='Enter') btn.click() });
+        
+        window.enviarImagem = (inp) => {
+            const file = inp.files[0];
+            if(!file) return;
             const r = new FileReader();
             r.onload = e => {
-                addBubble(`<img src="${e.target.result}">`, 'out');
-                callAI("Analise imagem", e.target.result.split(',')[1]);
+                addMsg(`<img src="${e.target.result}">`, 'outgoing');
+                enviarParaIA("Analise esta imagem.", e.target.result.split(',')[1]);
             };
-            if(f) r.readAsDataURL(f);
-        }
-
-        function addBubble(h, t) {
-            const d = document.createElement('div');
-            d.className = `msg ${t}`; d.innerHTML = h;
-            const c = document.getElementById('chat');
-            c.appendChild(d); c.scrollTop = c.scrollHeight;
-        }
+            r.readAsDataURL(file);
+        };
 
         async function endGame(win) {
-            clearInterval(timerInt);
-            const c = CHARS[state.idx];
-            state.score += win ? (state.vibe * 10) : 0;
+            clearInterval(timer.int);
+            const char = PERSONAGENS[state.charIndex];
+            const points = win ? (state.vibe * 10) + timer.val : 0;
+            state.score += points;
 
-            // Salvar Ranking
-            if(window.db) {
-                try {
-                    const { collection, addDoc } = window.dbMethods;
-                    await addDoc(collection(window.db, "ranking"), { nome: state.name, pontos: state.score });
-                } catch(e) {}
-            } else {
-                let r = JSON.parse(localStorage.getItem('rank') || "[]");
-                r.push({nome: state.name, pontos: state.score});
-                localStorage.setItem('rank', JSON.stringify(r));
-            }
+            // Ranking Local (Se não tiver Firebase)
+            let r = JSON.parse(localStorage.getItem('rank') || "[]");
+            r.push({nome: state.playerName, pontos: state.score});
+            localStorage.setItem('rank', JSON.stringify(r));
 
-            nav('s-result');
-            document.getElementById('r-img').src = win ? c.w : c.l;
-            document.getElementById('r-title').innerText = win ? "VENDA!" : "PERDEU";
-            loadRank();
+            setTimeout(() => {
+                const s = document.getElementById('result-screen');
+                s.classList.remove('hidden');
+                document.getElementById('app-header').classList.add('hidden');
+                document.getElementById('chat-container').classList.add('hidden');
+                document.getElementById('input-area').classList.add('hidden');
+                document.getElementById('stats-bar').classList.add('hidden');
+
+                document.getElementById('result-img').src = win ? char.win : char.lose;
+                document.getElementById('res-title').innerText = win ? "VENDA FECHADA!" : "PERDEU!";
+                document.getElementById('res-msg').innerText = `Pontos: ${points}`;
+                carregarRanking();
+            }, 1500);
         }
 
-        async function loadRank() {
-            const div = document.getElementById('r-ranking');
-            div.innerHTML = "Carregando...";
-            let html = "";
-            
-            let dados = [];
-            if(window.db) {
-                try {
-                    const { collection, getDocs, query, orderBy, limit } = window.dbMethods;
-                    const snap = await getDocs(query(collection(window.db, "ranking"), orderBy("pontos", "desc"), limit(5)));
-                    snap.forEach(d => dados.push(d.data()));
-                } catch(e) { console.log("Erro ranking online"); }
-            } 
-            
-            if (dados.length === 0) {
-                dados = JSON.parse(localStorage.getItem('rank') || "[]").sort((a,b)=>b.pontos-a.pontos).slice(0,5);
-            }
-            
-            dados.forEach((d, i) => {
-                html += `<div class="rank-row"><span>${i+1}. ${d.nome}</span><span>${d.pontos}</span></div>`;
-            });
-            
-            div.innerHTML = html || "Sem dados.";
+        function carregarRanking() {
+            const list = document.getElementById('ranking-list');
+            let d = JSON.parse(localStorage.getItem('rank') || "[]").sort((a,b)=>b.pontos-a.pontos).slice(0,5);
+            list.innerHTML = d.map((x,i) => `<div class="rank-row ${i===0?'rank-1':''}"><span class="r-name">${i+1}. ${x.nome}</span><span>${x.pontos}</span></div>`).join('');
         }
 
-        window.nextChar = () => {
-            state.idx++;
-            if(state.idx >= CHARS.length) state.idx = 0;
-            nav(null); loadChar();
+        window.proximoCliente = () => {
+            document.getElementById('result-screen').classList.add('hidden');
+            state.charIndex++;
+            if(state.charIndex >= PERSONAGENS.length) state.charIndex = 0;
+            mostrarInterface(); carregarPersonagem();
         }
     </script>
 </body>
