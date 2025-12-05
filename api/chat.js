@@ -1,26 +1,32 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default async function handler(req, res) {
-  // Permite que o site converse com este servidor (CORS)
+  // Configuração CORS (Permite o site falar com a API)
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
+  // Responde rápido para requisições de verificação (OPTIONS)
   if (req.method === 'OPTIONS') return res.status(200).end();
-  
-  // Verifica se a chave existe no cofre da Vercel
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({ 
-        reply: "ERRO CRÍTICO: Chave de API não configurada no painel da Vercel.", 
-        vibe_change: 0, 
-        status: "continue" 
-    });
-  }
+
+  // Apenas aceita POST (envio de dados)
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    // O modelo 1.5-flash requer a biblioteca @google/generative-ai atualizada (0.16.0+)
+    const apiKey = process.env.GEMINI_API_KEY;
+    
+    // Verificação crítica da chave
+    if (!apiKey) {
+        console.error("ERRO CRÍTICO: Variável GEMINI_API_KEY não encontrada no ambiente.");
+        return res.status(500).json({ 
+            reply: "ERRO DE CONFIGURAÇÃO: Chave de API não encontrada no painel da Vercel. Por favor, configure a variável GEMINI_API_KEY.", 
+            vibe_change: 0, 
+            status: "continue" 
+        });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const { message, characterPrompt, history, image } = req.body;
@@ -35,15 +41,14 @@ export default async function handler(req, res) {
       3. Se fechar venda use status "won", se perder use "lost".
       
       FORMATO JSON OBRIGATÓRIO:
-      { "reply": "texto", "vibe_change": 0, "status": "continue" }
+      { "reply": "texto da resposta", "vibe_change": 0, "status": "continue" }
     `;
 
     const parts = [{ text: systemPrompt }];
 
-    // Histórico
-    if (history && history.length) {
+    // Adiciona histórico se existir
+    if (history && Array.isArray(history)) {
         history.slice(-6).forEach(h => {
-             // Proteção contra histórico vazio
              if(h.parts && h.parts[0] && h.parts[0].text) {
                 parts.push({ text: `[${h.role}]: ${h.parts[0].text}` });
              }
@@ -61,15 +66,15 @@ export default async function handler(req, res) {
     const response = await result.response;
     const text = response.text();
     
-    // Limpeza para garantir JSON
+    // Limpeza para garantir JSON válido
     const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
     
     try {
         const jsonResponse = JSON.parse(jsonStr);
         res.status(200).json(jsonResponse);
     } catch (e) {
-        // Se a IA não mandar JSON, usa o texto puro como resposta
-        console.error("IA não mandou JSON:", text);
+        console.error("IA não mandou JSON válido:", text);
+        // Fallback: se a IA mandar texto puro, a gente empacota como JSON
         res.status(200).json({
             reply: text,
             vibe_change: 0,
@@ -78,16 +83,9 @@ export default async function handler(req, res) {
     }
 
   } catch (error) {
-    console.error("Erro API:", error);
-    
-    // Tratamento específico para o erro de modelo não encontrado
-    let errorReply = `Erro técnico: ${error.message}`;
-    if (error.message.includes("404") || error.message.includes("not found")) {
-        errorReply = "ERRO TÉCNICO: Modelo de IA não encontrado. O 'package.json' precisa ser atualizado para a versão mais recente da biblioteca do Google.";
-    }
-
+    console.error("Erro na API do Google:", error);
     res.status(500).json({ 
-        reply: errorReply, 
+        reply: `Erro técnico: ${error.message}`, 
         vibe_change: 0, 
         status: "continue" 
     });
