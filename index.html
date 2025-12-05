@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stranger Ink</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500&family=Bebas+Neue&family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ESTILO COMPLETO */
+        :root { --bg-app: #0b141a; --bg-header: #202c33; --bubble-in: #202c33; --bubble-out: #005c4b; --accent: #00a884; --text: #e9edef; --red: #ff0033; }
+        body { background: #000; height: 100vh; margin: 0; display: flex; justify-content: center; font-family: 'Heebo', sans-serif; overflow: hidden; }
+        #app { width: 100%; max-width: 500px; height: 100%; background: var(--bg-app); position: relative; display: flex; flex-direction: column; }
+        
+        /* TELAS */
+        .screen { position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:99; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+        .hidden { display: none !important; }
+        
+        /* UI ELEMENTOS */
+        .logo { width: 80%; max-width: 300px; margin-bottom: 40px; filter: drop-shadow(0 0 15px var(--red)); }
+        .btn { background: var(--red); color: #000; border: none; padding: 15px 40px; font-family: 'Bebas Neue'; font-size: 2.5rem; border-radius: 10px; cursor: pointer; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.7; } }
+        
+        .input-arcade { background: transparent; border: 2px solid var(--red); color: var(--red); font-family: 'Press Start 2P'; padding: 15px; text-align: center; width: 80%; margin: 20px 0; text-transform: uppercase; }
+        
+        /* CHAT UI */
+        header { background: var(--bg-header); height: 60px; padding: 0 15px; display: flex; align-items: center; justify-content: space-between; color: white; }
+        .profile { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .status-bar { background: rgba(0,0,0,0.8); color: #fff; padding: 5px; text-align: center; font-family: 'Press Start 2P'; font-size: 0.6rem; display: flex; justify-content: space-between; }
+        
+        #chat { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: url('Fundo do WhatsApp.jpg'); background-size: cover; }
+        .msg { max-width: 80%; padding: 10px; border-radius: 10px; color: #fff; font-size: 0.95rem; word-wrap: break-word; }
+        .in { align-self: flex-start; background: var(--bubble-in); }
+        .out { align-self: flex-end; background: var(--bubble-out); }
+        
+        #input-area { background: var(--bg-header); padding: 10px; display: flex; gap: 10px; align-items: center; }
+        #msg-input { flex: 1; background: #2a3942; border: none; padding: 10px; border-radius: 20px; color: white; }
+        .icon { color: #8696a0; font-size: 1.2rem; cursor: pointer; }
+        
+        /* RANKING */
+        .rank-box { width: 90%; background: #111; border: 1px solid var(--accent); padding: 10px; margin: 20px 0; color: #fff; font-family: 'Press Start 2P'; font-size: 0.7rem; text-align: left; }
+        .rank-row { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dashed #333; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- TELA INICIAL -->
+        <div id="s-start" class="screen">
+            <img src="Logo.png" class="logo">
+            <button class="btn" onclick="nav('s-name')">COMEÇAR</button>
+        </div>
+
+        <!-- TELA NOME -->
+        <div id="s-name" class="screen hidden">
+            <h2 style="color:var(--red); font-family:'Press Start 2P'">QUEM É VOCÊ?</h2>
+            <input type="text" id="p-name" class="input-arcade" maxlength="8">
+            <button class="btn" style="font-size:1.5rem" onclick="startGame()">PLAY</button>
+        </div>
+
+        <!-- TELA RESULTADO -->
+        <div id="s-result" class="screen hidden">
+            <img id="r-img" src="" class="logo" style="width:200px">
+            <h1 id="r-title" style="color:white; font-family:'Bebas Neue'; font-size:3rem"></h1>
+            <div id="r-ranking" class="rank-box">Carregando Ranking...</div>
+            <button class="btn" style="font-size:1.5rem; background:var(--accent)" onclick="nextChar()">PRÓXIMO</button>
+        </div>
+
+        <!-- JOGO -->
+        <header>
+            <div class="profile">
+                <img id="c-img" class="avatar" src="">
+                <div><div id="c-name" style="font-weight:bold">...</div><div id="c-status" style="font-size:0.8rem; color:var(--accent)">online</div></div>
+            </div>
+            <div><i class="fas fa-video"></i> <i class="fas fa-phone"></i></div>
+        </header>
+        <div class="status-bar">
+            <span>VIBE: <span id="v-val" style="color:var(--accent)">100%</span></span>
+            <span id="timer">04:00</span>
+        </div>
+        <div id="chat"></div>
+        <div id="input-area">
+            <label for="f-up"><i class="fas fa-paperclip icon"></i></label>
+            <input type="file" id="f-up" hidden onchange="sendImg(this)">
+            <input type="text" id="msg-input" placeholder="Mensagem">
+            <i class="fas fa-paper-plane icon" style="color:var(--accent)" onclick="sendMsg()"></i>
+        </div>
+    </div>
+
+    <!-- FIREBASE SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- COLE AQUI SUA CONFIG DO FIREBASE (PASSO 3) ---
+        const firebaseConfig = {apiKey: "AIzaSyDOjbKAgF4rS1bMSoujyO2a58an4mbLHC8",
+  authDomain: "stranger-ink.firebaseapp.com",
+  projectId: "stranger-ink",
+  storageBucket: "stranger-ink.firebasestorage.app",
+  messagingSenderId: "731341217746",
+  appId: "1:731341217746:web:22c8e54f13975e7e9e720b",
+  measurementId: "G-P8911YB9FV"
+            apiKey: "AIzaSyDOjbKAgF4rS1bMSoujyO2a58an4mbLHC8",
+  authDomain: "stranger-ink.firebaseapp.com",
+  projectId: "stranger-ink",
+  storageBucket: "stranger-ink.firebasestorage.app",
+  messagingSenderId: "731341217746",
+  appId: "1:731341217746:web:22c8e54f13975e7e9e720b",
+  measurementId: "G-P8911YB9FV"// Cole as chaves aqui (apiKey, authDomain, etc...)
+        };
+
+        let db;
+        try {
+            if (firebaseConfig.apiKey) {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                window.db = db;
+                window.dbMethods = { collection, addDoc, getDocs, query, orderBy, limit };
+            }
+        } catch(e) { console.log("Firebase Off"); }
+    </script>
+
+    <script>
+        const CHARS = [
+            {id:"billy", name:"Billy", img:"Billy Hargrove normal.jpg", w:"Billy Hargrove vitoria.jpg", l:"Billy Hargrove derrota.jpg", p:"Billy Hargrove. Agressivo, rude."},
+            {id:"eleven", name:"Eleven", img:"Eleven Normal.jpg", w:"Eleven Vitoria.jpg", l:"Eleven brava.jpg", p:"Eleven. Fala pouco, desconfiada."},
+            // ... Adicione os outros aqui
+        ];
+        
+        let state = { idx: 0, vibe: 100, hist: [], name: "PLAYER", score: 0 };
+        let timerInt;
+
+        function nav(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+            if(id) document.getElementById(id).classList.remove('hidden');
+        }
+
+        function startGame() {
+            const n = document.getElementById('p-name').value;
+            if(!n) return alert("Digite um nome!");
+            state.name = n.toUpperCase();
+            nav(null); // Esconde telas cheias
+            loadChar();
+        }
+
+        function loadChar() {
+            const c = CHARS[state.idx];
+            document.getElementById('c-name').innerText = c.name;
+            document.getElementById('c-img').src = c.img;
+            document.getElementById('chat').innerHTML = '<div class="msg system" style="text-align:center; font-size:0.7rem; color:gold; background:rgba(0,0,0,0.5); padding:5px; border-radius:10px; width:90%; margin:10px auto">🔒 Mensagens protegidas</div>';
+            state.hist = []; state.vibe = 100;
+            document.getElementById('v-val').innerText = "100%";
+            callAI("O cliente abriu o chat. Inicie.");
+            startTimer(240);
+        }
+
+        function startTimer(sec) {
+            clearInterval(timerInt);
+            let t = sec;
+            const el = document.getElementById('timer');
+            timerInt = setInterval(() => {
+                t--;
+                el.innerText = new Date(t * 1000).toISOString().substr(14, 5);
+                if(t <= 0) { clearInterval(timerInt); endGame(false); }
+            }, 1000);
+        }
+
+        async function callAI(txt, img=null) {
+            document.getElementById('c-status').innerText = "digitando...";
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        message: txt, 
+                        characterPrompt: CHARS[state.idx].p,
+                        history: state.hist,
+                        image: img
+                    })
+                });
+                const data = await res.json();
+                
+                document.getElementById('c-status').innerText = "online";
+                addBubble(data.reply.replace(/\[.*?\]/g, ""), 'in');
+                
+                if(txt !== "O cliente abriu o chat. Inicie.") {
+                    state.hist.push({role:"user", parts:[{text:txt}]}, {role:"model", parts:[{text:data.reply}]});
+                    state.vibe += data.vibe_change;
+                    document.getElementById('v-val').innerText = state.vibe + "%";
+                }
+
+                if(data.status === 'won') endGame(true);
+                if(data.status === 'lost' || state.vibe <= 0) endGame(false);
+            } catch(e) { console.log(e); }
+        }
+
+        function sendMsg() {
+            const i = document.getElementById('msg-input');
+            if(!i.value) return;
+            addBubble(i.value, 'out');
+            callAI(i.value);
+            i.value = '';
+        }
+
+        function sendImg(el) {
+            const f = el.files[0];
+            const r = new FileReader();
+            r.onload = e => {
+                addBubble(`<img src="${e.target.result}">`, 'out');
+                callAI("Analise imagem", e.target.result.split(',')[1]);
+            };
+            if(f) r.readAsDataURL(f);
+        }
+
+        function addBubble(h, t) {
+            const d = document.createElement('div');
+            d.className = `msg ${t}`; d.innerHTML = h;
+            const c = document.getElementById('chat');
+            c.appendChild(d); c.scrollTop = c.scrollHeight;
+        }
+
+        async function endGame(win) {
+            clearInterval(timerInt);
+            const c = CHARS[state.idx];
+            state.score += win ? (state.vibe * 10) : 0;
+
+            // Salvar Ranking
+            if(window.db) {
+                try {
+                    const { collection, addDoc } = window.dbMethods;
+                    await addDoc(collection(window.db, "ranking"), { nome: state.name, pontos: state.score });
+                } catch(e) {}
+            }
+
+            nav('s-result');
+            document.getElementById('r-img').src = win ? c.w : c.l;
+            document.getElementById('r-title').innerText = win ? "VENDA!" : "PERDEU";
+            loadRank();
+        }
+
+        async function loadRank() {
+            const div = document.getElementById('r-ranking');
+            div.innerHTML = "Carregando...";
+            let html = "";
+            if(window.db) {
+                const { collection, getDocs, query, orderBy, limit } = window.dbMethods;
+                const snap = await getDocs(query(collection(window.db, "ranking"), orderBy("pontos", "desc"), limit(5)));
+                snap.forEach((d, i) => {
+                    const dd = d.data();
+                    html += `<div class="rank-row"><span>${i+1}. ${dd.nome}</span><span>${dd.pontos}</span></div>`;
+                });
+            }
+            div.innerHTML = html || "Sem conexão com Ranking.";
+        }
+
+        window.nextChar = () => {
+            state.idx++;
+            if(state.idx >= CHARS.length) state.idx = 0;
+            nav(null); loadChar();
+        }
+    </script>
+</body>
+</html>
