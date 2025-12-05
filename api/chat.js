@@ -3,40 +3,93 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export default async function handler(req, res) {
-    // Configuração para aceitar conexões do App
+    // 1. Configuração CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     try {
         const { message, characterPrompt, history, image } = req.body;
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-        const systemPrompt = `
-        ${characterPrompt}
-        CENÁRIO: WhatsApp. Jogo de vendas.
-        REGRAS: Responda curto (máx 2 frases). Avalie a resposta do usuário: [VIBE: +X] ou [VIBE: -X].
-        STATUS: Se fechar venda use "won", se perder use "lost".
-        FORMATO JSON: { "reply": "texto", "vibe_change": 0, "status": "continue" }
-        `;
-
-        const parts = [{ text: systemPrompt }];
         
-        if(history) history.slice(-6).forEach(h => parts.push({ text: `[${h.role}]: ${h.parts[0].text}` }));
-        parts.push({ text: `[Usuário]: ${message}` });
+        if (!process.env.GEMINI_API_KEY) {
+            throw new Error("Chave de API não configurada na Vercel");
+        }
+
+        // 2. Configuração do Modelo (Requer SDK v0.21.0+)
+        const model = genAI.getGenerativeModel({ 
+            model: "gemini-1.5-flash",
+            systemInstruction: {
+                parts: [{ text: `
+                    ${characterPrompt}
+                    CENÁRIO: WhatsApp. Jogo de vendas Stranger Things.
+                    REGRAS: Responda curto (máx 2 frases). 
+                    Avalie a resposta: [VIBE: +X] ou [VIBE: -X].
+                    STATUS: "won", "lost" ou "continue".
+                `}]
+            },
+            // Força a IA a retornar JSON válido
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
+        const parts = [];
+
+        // 3. Histórico Defensivo (Evita crash se o formato variar)
+        if (history && Array.isArray(history)) {
+            history.slice(-6).forEach(h => {
+                // Tenta ler texto de várias formas possíveis
+                let text = "";
+                if (h.parts?.[0]?.text) text = h.parts[0].text;
+                else if (typeof h.content === 'string') text = h.content;
+                
+                if (text) {
+                    parts.push({ text: `[Histórico (${h.role})]: ${text}` });
+                }
+            });
+        }
         
-        if (image) parts.push({ inlineData: { mimeType: "image/jpeg", data: image } });
+        parts.push({ text: `[Mensagem Atual]: ${message}` });
+        
+        // 4. Tratamento de Imagem (Remove o prefixo data:image...)
+        if (image) {
+            const cleanImage = image.includes("base64,") ? image.split("base64,")[1] : image;
+            parts.push({ 
+                inlineData: { 
+                    mimeType: "image/jpeg", 
+                    data: cleanImage 
+                } 
+            });
+            parts.push({ text: "(Imagem enviada)" });
+        }
 
         const result = await model.generateContent({ contents: [{ role: "user", parts: parts }] });
-        const text = result.response.text().replace(/```json|```/g, '').trim();
+        const response = await result.response;
+        const text = response.text();
         
-        res.status(200).json(JSON.parse(text));
+        // Parse JSON
+        let jsonResponse;
+        try {
+            jsonResponse = JSON.parse(text);
+        } catch (e) {
+            // Fallback
+            jsonResponse = {
+                reply: text, 
+                vibe_change: 0, 
+                status: "continue"
+            };
+        }
+        
+        res.status(200).json(jsonResponse);
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ reply: "Erro de conexão.", vibe_change: 0, status: "continue" });
+        console.error("ERRO API:", error);
+        // Retorna o erro detalhado para ajudar no debug (veja no Console do navegador)
+        res.status(500).json({ 
+            reply: "Interferência do Mundo Invertido... (Erro no Servidor)", 
+            error_details: error.message 
+        });
     }
 }
