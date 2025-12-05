@@ -1,95 +1,86 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
 export default async function handler(req, res) {
-    // 1. Configuração CORS
+    // 1. Configurações de Segurança (CORS)
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
+    // 2. Responder ao "ping" do navegador
     if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    
+    // 3. Só aceita POST
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
 
     try {
-        const { message, characterPrompt, history, image } = req.body;
-        
-        if (!process.env.GEMINI_API_KEY) {
-            throw new Error("Chave de API não configurada na Vercel");
+        // 4. Verifica a Chave na Vercel
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            console.error("ERRO FATAL: Chave GEMINI_API_KEY não encontrada nas variáveis de ambiente.");
+            throw new Error("Chave de API não configurada no Painel da Vercel.");
         }
 
-        // 2. Configuração do Modelo (Requer SDK v0.21.0+)
-        const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
-            systemInstruction: {
-                parts: [{ text: `
-                    ${characterPrompt}
-                    CENÁRIO: WhatsApp. Jogo de vendas Stranger Things.
-                    REGRAS: Responda curto (máx 2 frases). 
-                    Avalie a resposta: [VIBE: +X] ou [VIBE: -X].
-                    STATUS: "won", "lost" ou "continue".
-                `}]
-            },
-            // Força a IA a retornar JSON válido
-            generationConfig: { responseMimeType: "application/json" }
-        });
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const parts = [];
+        const { message, characterPrompt, history, image } = req.body;
 
-        // 3. Histórico Defensivo (Evita crash se o formato variar)
+        // 5. Prompt Robusto
+        const systemPrompt = `
+        ${characterPrompt}
+        CONTEXTO: Você é um personagem em um jogo de vendas via WhatsApp.
+        REGRAS: Responda curto (máximo 2 frases).
+        AVALIE: [VIBE: +X] ou [VIBE: -X].
+        STATUS: "won" (venda feita), "lost" (desistência), "continue".
+        FORMATO JSON: {"reply": "texto", "vibe_change": 0, "status": "continue"}
+        `;
+
+        const parts = [{ text: systemPrompt }];
+
+        // Adiciona histórico se existir
         if (history && Array.isArray(history)) {
             history.slice(-6).forEach(h => {
-                // Tenta ler texto de várias formas possíveis
-                let text = "";
-                if (h.parts?.[0]?.text) text = h.parts[0].text;
-                else if (typeof h.content === 'string') text = h.content;
-                
-                if (text) {
-                    parts.push({ text: `[Histórico (${h.role})]: ${text}` });
+                if (h && h.parts && h.parts[0]) {
+                    parts.push({ text: `[${h.role}]: ${h.parts[0].text}` });
                 }
             });
         }
-        
-        parts.push({ text: `[Mensagem Atual]: ${message}` });
-        
-        // 4. Tratamento de Imagem (Remove o prefixo data:image...)
+
+        parts.push({ text: `[Usuário]: ${message}` });
+
         if (image) {
-            const cleanImage = image.includes("base64,") ? image.split("base64,")[1] : image;
-            parts.push({ 
-                inlineData: { 
-                    mimeType: "image/jpeg", 
-                    data: cleanImage 
-                } 
-            });
-            parts.push({ text: "(Imagem enviada)" });
+            parts.push({ inlineData: { mimeType: "image/jpeg", data: image } });
+            parts.push({ text: "(O usuário enviou uma imagem)" });
         }
 
         const result = await model.generateContent({ contents: [{ role: "user", parts: parts }] });
-        const response = await result.response;
-        const text = response.text();
-        
-        // Parse JSON
+        const responseText = result.response.text();
+
+        // 6. Limpeza do JSON (A parte crítica)
+        const jsonStr = responseText.replace(/```json|```/g, '').trim();
         let jsonResponse;
+        
         try {
-            jsonResponse = JSON.parse(text);
+            jsonResponse = JSON.parse(jsonStr);
         } catch (e) {
-            // Fallback
+            // Se a IA falhar em mandar JSON, improvisamos para não quebrar o jogo
             jsonResponse = {
-                reply: text, 
-                vibe_change: 0, 
+                reply: jsonStr, // Usa o texto puro como resposta
+                vibe_change: 0,
                 status: "continue"
             };
         }
-        
+
         res.status(200).json(jsonResponse);
 
     } catch (error) {
-        console.error("ERRO API:", error);
-        // Retorna o erro detalhado para ajudar no debug (veja no Console do navegador)
+        console.error("Erro na API:", error);
+        // Retorna o erro real para você ler no chat
         res.status(500).json({ 
-            reply: "Interferência do Mundo Invertido... (Erro no Servidor)", 
-            error_details: error.message 
+            reply: `ERRO DO SISTEMA: ${error.message}`, 
+            vibe_change: 0, 
+            status: "continue" 
         });
     }
 }

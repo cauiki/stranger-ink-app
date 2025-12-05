@@ -94,20 +94,8 @@
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // --- COLE AQUI SUA CONFIG DO FIREBASE (PASSO 3) ---
-        const firebaseConfig = {apiKey: "AIzaSyDOjbKAgF4rS1bMSoujyO2a58an4mbLHC8",
-  authDomain: "stranger-ink.firebaseapp.com",
-  projectId: "stranger-ink",
-  storageBucket: "stranger-ink.firebasestorage.app",
-  messagingSenderId: "731341217746",
-  appId: "1:731341217746:web:22c8e54f13975e7e9e720b",
-  measurementId: "G-P8911YB9FV"
-            apiKey: "AIzaSyDOjbKAgF4rS1bMSoujyO2a58an4mbLHC8",
-  authDomain: "stranger-ink.firebaseapp.com",
-  projectId: "stranger-ink",
-  storageBucket: "stranger-ink.firebasestorage.app",
-  messagingSenderId: "731341217746",
-  appId: "1:731341217746:web:22c8e54f13975e7e9e720b",
-  measurementId: "G-P8911YB9FV"// Cole as chaves aqui (apiKey, authDomain, etc...)
+        const firebaseConfig = {
+            // Cole as chaves aqui (apiKey, authDomain, etc...)
         };
 
         let db;
@@ -151,7 +139,12 @@
             document.getElementById('chat').innerHTML = '<div class="msg system" style="text-align:center; font-size:0.7rem; color:gold; background:rgba(0,0,0,0.5); padding:5px; border-radius:10px; width:90%; margin:10px auto">🔒 Mensagens protegidas</div>';
             state.hist = []; state.vibe = 100;
             document.getElementById('v-val').innerText = "100%";
-            callAI("O cliente abriu o chat. Inicie.");
+            
+            // Delay pequeno para garantir que o DOM carregou antes de chamar a API
+            setTimeout(() => {
+                callAI("O cliente abriu o chat. Inicie.");
+            }, 500);
+            
             startTimer(240);
         }
 
@@ -191,7 +184,10 @@
 
                 if(data.status === 'won') endGame(true);
                 if(data.status === 'lost' || state.vibe <= 0) endGame(false);
-            } catch(e) { console.log(e); }
+            } catch(e) { 
+                console.log(e); 
+                addBubble("Erro de conexão com a IA.", 'in');
+            }
         }
 
         function sendMsg() {
@@ -230,6 +226,10 @@
                     const { collection, addDoc } = window.dbMethods;
                     await addDoc(collection(window.db, "ranking"), { nome: state.name, pontos: state.score });
                 } catch(e) {}
+            } else {
+                let r = JSON.parse(localStorage.getItem('rank') || "[]");
+                r.push({nome: state.name, pontos: state.score});
+                localStorage.setItem('rank', JSON.stringify(r));
             }
 
             nav('s-result');
@@ -242,15 +242,25 @@
             const div = document.getElementById('r-ranking');
             div.innerHTML = "Carregando...";
             let html = "";
+            
+            let dados = [];
             if(window.db) {
-                const { collection, getDocs, query, orderBy, limit } = window.dbMethods;
-                const snap = await getDocs(query(collection(window.db, "ranking"), orderBy("pontos", "desc"), limit(5)));
-                snap.forEach((d, i) => {
-                    const dd = d.data();
-                    html += `<div class="rank-row"><span>${i+1}. ${dd.nome}</span><span>${dd.pontos}</span></div>`;
-                });
+                try {
+                    const { collection, getDocs, query, orderBy, limit } = window.dbMethods;
+                    const snap = await getDocs(query(collection(window.db, "ranking"), orderBy("pontos", "desc"), limit(5)));
+                    snap.forEach(d => dados.push(d.data()));
+                } catch(e) { console.log("Erro ranking online"); }
+            } 
+            
+            if (dados.length === 0) {
+                dados = JSON.parse(localStorage.getItem('rank') || "[]").sort((a,b)=>b.pontos-a.pontos).slice(0,5);
             }
-            div.innerHTML = html || "Sem conexão com Ranking.";
+            
+            dados.forEach((d, i) => {
+                html += `<div class="rank-row"><span>${i+1}. ${d.nome}</span><span>${d.pontos}</span></div>`;
+            });
+            
+            div.innerHTML = html || "Sem dados.";
         }
 
         window.nextChar = () => {
