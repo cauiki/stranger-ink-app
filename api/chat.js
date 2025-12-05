@@ -20,6 +20,7 @@ export default async function handler(req, res) {
 
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    // O modelo 1.5-flash requer a biblioteca @google/generative-ai atualizada (0.16.0+)
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const { message, characterPrompt, history, image } = req.body;
@@ -78,8 +79,15 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error("Erro API:", error);
+    
+    // Tratamento específico para o erro de modelo não encontrado
+    let errorReply = `Erro técnico: ${error.message}`;
+    if (error.message.includes("404") || error.message.includes("not found")) {
+        errorReply = "ERRO TÉCNICO: Modelo de IA não encontrado. O 'package.json' precisa ser atualizado para a versão mais recente da biblioteca do Google.";
+    }
+
     res.status(500).json({ 
-        reply: `Erro técnico: ${error.message}`, 
+        reply: errorReply, 
         vibe_change: 0, 
         status: "continue" 
     });
