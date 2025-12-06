@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#111b21">
     <title>Stranger Ink Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&family=Oswald:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -22,34 +22,41 @@
         #app-frame { 
             width: 100%; max-width: 500px; height: 100%; background: var(--bg-list); 
             position: relative; display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 0 40px rgba(0,0,0,0.7);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
         }
 
-        /* === TELA INICIAL === */
+        /* === TELA INICIAL (DESIGN PISCANTE) === */
         #start-screen {
             position: absolute; inset: 0; z-index: 999;
-            background: url('Tela Inicial.jpg') no-repeat center center / cover;
-            display: flex; flex-direction: column; align-items: center;
+            background: url('fundo.jpg') no-repeat center center / cover;
+            background-color: #000; /* Fallback */
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding-top: 40px;
         }
         
         .btn-start-top {
-            position: absolute; top: 40px; 
-            background: rgba(255, 0, 0, 0.4); color: #fff; border: 2px solid var(--neon-red);
-            padding: 10px 35px; border-radius: 25px; font-family: 'Oswald'; font-size: 1.1rem;
-            cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
-            box-shadow: 0 0 20px var(--neon-red);
-            animation: blink 0.6s infinite alternate;
-            backdrop-filter: blur(5px);
+            background: var(--neon-red); color: #000; border: none;
+            padding: 8px 30px; border-radius: 4px; font-family: 'Oswald'; 
+            font-size: 0.9rem; font-weight: 700; cursor: pointer; 
+            text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 0 15px var(--neon-red);
+            animation: pulse-red 1s infinite alternate;
         }
-        @keyframes blink { from { opacity: 1; transform: scale(1); } to { opacity: 0.7; transform: scale(0.95); } }
         
-        .input-name {
+        .input-blink {
             position: absolute; bottom: 100px; width: 80%; text-align: center;
-            background: rgba(0,0,0,0.7); border: 1px solid #555; color: #fff; padding: 12px;
-            border-radius: 10px; font-size: 1.1rem;
+            background: #000; border: 3px solid var(--neon-red);
+            color: var(--neon-red); padding: 15px; border-radius: 4px;
+            font-family: 'Oswald'; font-size: 1.2rem; outline: none; text-transform: uppercase;
+            box-shadow: 0 0 10px var(--neon-red);
+            animation: border-flash 0.3s infinite alternate;
         }
+        .input-blink::placeholder { color: #500; }
 
-        /* === MENU LISTA (WhatsApp Business) === */
+        @keyframes pulse-red { from { transform: scale(1); } to { transform: scale(1.05); box-shadow: 0 0 25px var(--neon-red); } }
+        @keyframes border-flash { from { border-color: var(--neon-red); color: var(--neon-red); } to { border-color: #000; color: #500; } }
+
+        /* === MENU LISTA (LAYOUT REALISTA) === */
         #chat-list-screen { flex: 1; display: flex; flex-direction: column; background: var(--bg-list); }
         
         .wa-header {
@@ -57,72 +64,95 @@
             display: flex; align-items: center; justify-content: space-between;
             color: var(--text-sec); border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .timer-display { color: var(--neon-red); font-weight: bold; font-family: monospace; border: 1px solid var(--neon-red); padding: 2px 8px; border-radius: 4px; }
-
-        .tabs { display: flex; height: 45px; align-items: center; background: var(--bg-header); color: var(--text-sec); font-weight: 500; font-size: 0.9rem; }
-        .tab { flex: 1; text-align: center; padding: 12px; border-bottom: 3px solid transparent; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; font-weight: bold; }
+        .meta-group { display: flex; flex-direction: column; align-items: flex-end; }
+        .timer-display { color: var(--neon-red); font-weight: bold; font-family: monospace; font-size: 0.9rem; }
+        
+        .tabs { display: flex; height: 48px; align-items: center; background: var(--bg-header); }
+        .tab { flex: 1; text-align: center; padding: 14px; border-bottom: 3px solid transparent; cursor: pointer; color: var(--text-sec); font-weight: bold; font-size: 0.9rem; text-transform: uppercase; }
         .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
         .chat-list { flex: 1; overflow-y: auto; }
         .chat-item {
-            display: flex; align-items: center; padding: 12px 15px; cursor: pointer;
-            border-bottom: 1px solid rgba(255,255,255,0.05); position: relative;
+            display: flex; padding: 12px 15px; cursor: pointer;
+            position: relative; height: 76px;
         }
         .chat-item:active { background: var(--item-hover); }
         
-        .ci-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px; background: #333; }
-        .ci-info { flex: 1; overflow: hidden; }
-        .ci-top { display: flex; justify-content: space-between; margin-bottom: 3px; }
-        .ci-name { color: var(--text-main); font-weight: 500; font-size: 1rem; }
-        .ci-time { color: var(--text-sec); font-size: 0.75rem; }
-        .ci-msg { color: var(--text-sec); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; }
+        .ci-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; margin-right: 15px; flex-shrink: 0; background: #333; }
         
-        .badge { background: var(--accent); color: #000; font-size: 0.75rem; font-weight: bold; min-width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; padding: 0 5px; animation: pop 0.3s; }
-        @keyframes pop { from{transform:scale(0)} to{transform:scale(1)} }
+        /* Layout Grid para Hora e Badge */
+        .ci-info { 
+            flex: 1; display: flex; flex-direction: column; justify-content: center; 
+            border-bottom: 1px solid rgba(255,255,255,0.08); padding-right: 5px;
+        }
+        
+        .ci-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+        .ci-name { color: var(--text-main); font-size: 1.05rem; font-weight: 400; }
+        .ci-time { color: var(--text-sec); font-size: 0.75rem; }
+        .ci-time.active { color: var(--accent); font-weight: 500; }
+        
+        .ci-bottom { display: flex; justify-content: space-between; align-items: center; }
+        .ci-msg { color: var(--text-sec); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; display: flex; align-items: center; gap: 5px; }
+        
+        /* Badge Abaixo da Hora */
+        .badge { background: var(--accent); color: #000; font-size: 0.75rem; font-weight: bold; min-width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
 
         /* === TELA DE CHAT === */
         #chat-detail-screen {
             position: absolute; inset: 0; background: #0b141a; z-index: 100;
-            display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         #chat-detail-screen.active { transform: translateX(0); }
         
-        .chat-header { background: var(--bg-header); padding: 5px 10px; display: flex; align-items: center; gap: 10px; height: 60px; }
-        .active-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer; }
+        .chat-header { background: var(--bg-header); padding: 5px 10px; display: flex; align-items: center; gap: 8px; height: 60px; }
+        .active-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; cursor: pointer; }
         
-        .chat-area {
-            flex: 1; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-            background-color: #0b141a; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px;
-        }
+        .chat-area { flex: 1; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: #0b141a; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 4px; }
         
-        .msg { max-width: 80%; padding: 8px 10px; border-radius: 8px; font-size: 0.95rem; color: #fff; position: relative; word-wrap: break-word; line-height: 1.4; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+        .msg { max-width: 80%; padding: 6px 9px; border-radius: 8px; font-size: 0.9rem; color: #fff; position: relative; line-height: 1.3; box-shadow: 0 1px 1px rgba(0,0,0,0.15); margin-bottom: 4px; }
         .incoming { align-self: flex-start; background: var(--bubble-in); border-top-left-radius: 0; }
         .outgoing { align-self: flex-end; background: var(--bubble-out); border-top-right-radius: 0; }
-        .msg img { max-width: 100%; border-radius: 6px; margin-top: 5px; }
-        .msg-time { font-size: 0.65rem; color: rgba(255,255,255,0.6); text-align: right; margin-top: 2px; }
+        .msg-time { font-size: 0.65rem; color: rgba(255,255,255,0.6); text-align: right; margin-top: 2px; float: right; margin-left: 8px; position: relative; top: 4px; }
 
-        /* Audio Player Style */
-        .audio-player { display: flex; align-items: center; gap: 10px; padding: 5px 0; min-width: 140px; }
-        .play-icon { width: 30px; height: 30px; background: rgba(0,0,0,0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        /* PLAYER DE ÁUDIO REALISTA */
+        .audio-bubble { display: flex; align-items: center; gap: 10px; min-width: 200px; padding: 5px 0; }
+        .play-btn { width: 35px; height: 35px; background: rgba(0,0,0,0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; color: #ccc; }
+        .play-btn.playing { color: var(--accent); }
+        .audio-track { flex: 1; height: 3px; background: rgba(255,255,255,0.2); position: relative; margin-top: 5px; }
+        .audio-progress { width: 0%; height: 100%; background: #fff; transition: width 0.1s; }
+        .mic-icon-sml { position: absolute; left: -15px; bottom: 0; font-size: 1rem; color: #8696a0; }
 
         /* INPUT */
-        .input-bar { background: var(--bg-header); padding: 5px 10px; display: flex; align-items: center; gap: 8px; min-height: 60px; }
+        .input-bar { background: var(--bg-header); padding: 5px 8px; display: flex; align-items: center; gap: 6px; min-height: 60px; padding-bottom: max(5px, env(safe-area-inset-bottom)); }
         .input-box { flex: 1; background: #2a3942; border-radius: 20px; padding: 9px 12px; display: flex; align-items: center; }
         .input-field { background: transparent; border: none; color: #fff; font-size: 1rem; width: 100%; outline: none; }
-        .mic-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: #fff; transition: 0.2s; }
-        .mic-btn.rec { background: var(--neon-red); animation: pulse 1s infinite; }
+        .mic-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: #fff; transition: 0.2s; flex-shrink: 0; }
+        .mic-btn.rec { background: var(--neon-red); animation: pulse-mic 1s infinite; }
+        @keyframes pulse-mic { 0% {transform:scale(1);} 50% {transform:scale(1.1);} 100% {transform:scale(1);} }
+
+        /* NOTIFICAÇÃO PUSH (TOAST) */
+        #push-notification {
+            position: absolute; top: 10px; left: 5%; width: 90%;
+            background: rgba(30, 30, 30, 0.95); backdrop-filter: blur(5px);
+            padding: 12px 15px; border-radius: 12px; z-index: 9999;
+            display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            border-left: 4px solid var(--accent);
+            transform: translateY(-150%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+        #push-notification.show { transform: translateY(0); }
 
         /* MODAL PERFIL */
         #profile-modal {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 200;
+            position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 200;
             display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
         #profile-modal.open { opacity: 1; pointer-events: all; }
-        #modal-img { width: 100vw; max-width: 350px; aspect-ratio: 1/1; object-fit: cover; border: 2px solid var(--accent); }
+        #modal-img { width: 280px; height: 280px; border-radius: 50%; object-fit: cover; border: 4px solid var(--accent); box-shadow: 0 0 50px rgba(0,0,0,0.8); }
 
         .hidden { display: none !important; }
-        #toast { position: absolute; top: 110px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 10px 20px; border-radius: 20px; z-index: 150; opacity: 0; transition: 0.3s; pointer-events: none; width: 90%; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -130,23 +160,30 @@
 <div id="app-frame">
     <div id="start-screen">
         <button class="btn-start-top" onclick="startGame()">INICIAR TURNO</button>
-        <div style="position: absolute; bottom: 20px; color: #ccc; font-size: 0.8rem; text-shadow: 1px 1px 2px #000;">
-            META: R$ 2.000,00 | TEMPO: 20 MIN
+        <input type="text" id="player-name" class="input-blink" placeholder="DIGITE SEU NOME" maxlength="15">
+    </div>
+
+    <div id="push-notification" onclick="clickPush()">
+        <img id="push-img" src="" style="width:45px; height:45px; border-radius:50%; object-fit:cover">
+        <div style="flex:1; overflow:hidden">
+            <div style="display:flex; justify-content:space-between">
+                <div id="push-title" style="font-weight:bold; color:#fff; font-size:0.95rem">Nome</div>
+                <div style="font-size:0.75rem; color:var(--accent)">AGORA</div>
+            </div>
+            <div id="push-msg" style="font-size:0.85rem; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">Mensagem...</div>
         </div>
-        <input type="text" id="player-name" class="input-name" placeholder="Seu Nome">
     </div>
 
     <div id="chat-list-screen" class="hidden">
         <div class="wa-header">
-            <span style="font-weight:bold; font-size:1.3rem; color:var(--text-main)">Ink Hub</span>
-            <div style="display:flex; gap:15px; align-items:center">
-                <span id="total-money" style="color:var(--accent); font-weight:bold">R$ 0</span>
+            <span style="font-weight:bold; font-size:1.4rem; color:var(--text-main); font-family:Helvetica, sans-serif;">Ink Hub</span>
+            <div class="meta-group">
                 <div class="timer-display" id="global-timer">20:00</div>
-                <i class="fas fa-ellipsis-v"></i>
+                <div style="color:var(--accent); font-weight:bold; font-size:0.8rem" id="money-display">R$ 0,00</div>
             </div>
         </div>
         <div class="tabs">
-            <div class="tab active">Conversas</div>
+            <div class="tab active"><i class="fas fa-comment-alt" style="font-size:1.2rem"></i></div>
             <div class="tab">Status</div>
             <div class="tab">Chamadas</div>
         </div>
@@ -155,15 +192,16 @@
 
     <div id="chat-detail-screen">
         <div class="chat-header">
-            <i class="fas fa-arrow-left" style="color:#fff; padding:10px; cursor:pointer; font-size:1.2rem" onclick="backToList()"></i>
+            <i class="fas fa-arrow-left" style="color:#fff; padding:5px; cursor:pointer; font-size:1.2rem" onclick="backToList()"></i>
             <img id="active-avatar" src="" class="active-avatar" onclick="openProfile()">
-            <div style="flex:1; cursor:pointer" onclick="openProfile()">
-                <div id="active-name" style="color:var(--text-main); font-weight:500">Nome</div>
+            <div style="flex:1; cursor:pointer; overflow:hidden" onclick="openProfile()">
+                <div id="active-name" style="color:var(--text-main); font-weight:500; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">Nome</div>
                 <div style="color:var(--text-sec); font-size:0.75rem">online</div>
             </div>
-            <div style="color:#fff; display:flex; gap:20px; font-size:1.2rem">
+            <div style="color:#fff; display:flex; gap:20px; font-size:1.1rem">
                 <i class="fas fa-video"></i>
                 <i class="fas fa-phone"></i>
+                <i class="fas fa-ellipsis-v"></i>
             </div>
         </div>
         
@@ -171,7 +209,7 @@
         
         <div class="input-bar">
             <div class="input-box">
-                <i class="far fa-smile" style="color:#8696a0; margin-right:10px; font-size:1.3rem"></i>
+                <i class="far fa-smile" style="color:#8696a0; font-size:1.3rem; margin-right:5px"></i>
                 <input type="text" class="input-field" id="msg-input" placeholder="Mensagem" autocomplete="off">
                 <label for="img-up"><i class="fas fa-paperclip" style="color:#8696a0; font-size:1.3rem; margin-left:10px; cursor:pointer; transform:rotate(45deg)"></i></label>
                 <input type="file" id="img-up" hidden accept="image/*" onchange="sendImage(this)">
@@ -184,111 +222,117 @@
     <div id="profile-modal" onclick="this.classList.remove('open')">
         <img id="modal-img" src="">
     </div>
-
-    <div id="toast">
-        <img id="toast-img" style="width:35px; height:35px; border-radius:50%; object-fit:cover">
-        <div style="flex:1">
-            <div id="toast-title" style="font-weight:bold; font-size:0.9rem">Nome</div>
-            <div id="toast-msg" style="font-size:0.8rem; color:#ccc">Mensagem...</div>
-        </div>
-    </div>
 </div>
 
 <script>
-    // === BASE DE DADOS COMPLETA ===
-    const ROSTER = [
-        {id:"eleven", name:"Eleven", req:"Tatuar '011' ou Waffle. Tímida."},
-        {id:"mike", name:"Mike Wheeler", req:"Tatuar D20. Líder, protetor."},
-        {id:"dustin", name:"Dustin Henderson", req:"Tatuar 'Never Ending Story'. Nerd."},
-        {id:"lucas", name:"Lucas Sinclair", req:"Tatuar Estilingue. Cético."},
-        {id:"will", name:"Will Byers", req:"Tatuar desenho do Mind Flayer."},
-        {id:"max", name:"Max Mayfield", req:"Tatuar Skate. Sarcástica."},
-        {id:"steve", name:"Steve Harrington", req:"Tatuar Taco com Pregos. Vaidoso."},
-        {id:"nancy", name:"Nancy Wheeler", req:"Tatuar Arma. Investigativa."},
-        {id:"jonathan", name:"Jonathan Byers", req:"Tatuar Câmera. Introvertido."},
-        {id:"joyce", name:"Joyce Byers", req:"Tatuar Luzes. Ansiosa."},
-        {id:"hopper", name:"Jim Hopper", req:"Cobrir cicatriz. Rabugento."},
-        {id:"robin", name:"Robin Buckley", req:"Tatuar Tuba. Tagarela."},
-        {id:"erica", name:"Erica Sinclair", req:"Piercing. Exige VIP."},
-        {id:"murray", name:"Murray Bauman", req:"Tatuar Código Russo. Paranoico."},
-        {id:"billy", name:"Billy Hargrove", req:"Tatuar Caveira. Agressivo."},
-        {id:"eddie", name:"Eddie Munson", req:"Tatuar Hellfire Club. Metaleiro."},
-        {id:"bob", name:"Bob Newby", req:"Tatuar Super-Herói. Gente boa."},
-        {id:"brenner", name:"Dr. Brenner", req:"Tatuar Número. Frio."},
-        {id:"owens", name:"Dr. Owens", req:"Tatuar Discreta. Diplomático."},
-        {id:"barb", name:"Barb Holland", req:"Tatuar Pequena. Insegura."},
-        {id:"karen", name:"Karen Wheeler", req:"Tatuar Cosmética. Flerta."},
-        {id:"ted", name:"Ted Wheeler", req:"Não quer. Reclama."},
-        {id:"holly", name:"Holly Wheeler", req:"Tatuar Temporária. Criança."},
-        {id:"argyle", name:"Argyle", req:"Tatuar Pizza. Chapado."},
-        {id:"enzo", name:"Dmitri Antonov", req:"Tatuar Lealdade. Russo."},
-        {id:"yuri", name:"Yuri Ismaylov", req:"Tatuar Manteiga de Amendoim."},
-        {id:"chrissy", name:"Chrissy Cunningham", req:"Piercing Umbigo. Assustada."},
-        {id:"jason", name:"Jason Carver", req:"Tatuar Basquete. Arrogante."},
-        {id:"vickie", name:"Vickie", req:"Tatuar Clarinete. Nervosa."},
-        {id:"suzie", name:"Suzie Bingham", req:"Tatuar Matemática. Canta."},
-        {id:"clarke", name:"Sr. Clarke", req:"Tatuar Átomo. Professor."},
-        {id:"kay", name:"Dra. Kay", req:"Tatuar Simbolo. Cientista."},
-        {id:"kali", name:"Kali (008)", req:"Tatuar Punk. Rebelde."},
-        {id:"alexei", name:"Alexei", req:"Tatuar Cereja. Infantil."},
-        {id:"grigori", name:"Grigori", req:"Tatuar Militar. Exterminador."},
-        {id:"kline", name:"Prefeito Kline", req:"Tatuar Patriota. Corrupto."},
-        {id:"sullivan", name:"Cel. Sullivan", req:"Tatuar Exército. Hostil."},
-        {id:"lonnie", name:"Lonnie Byers", req:"Tatuar Ruim. Bêbado."},
-        {id:"terry", name:"Terry Ives", req:"Tatuar Girassol. Repete."},
-        {id:"claudia", name:"Claudia Henderson", req:"Tatuar Gato. Simpática."},
-        {id:"charles", name:"Charles Sinclair", req:"Tatuar Jornal. Pai sério."},
-        {id:"sue", name:"Sue Sinclair", req:"Tatuar Floral. Mãe."},
-        {id:"victor", name:"Victor Creel", req:"Tatuar Casa. Perturbado."},
-        {id:"virginia", name:"Virginia Creel", req:"Tatuar Anjo. Fantasma."},
-        {id:"fred", name:"Fred Benson", req:"Tatuar Caneta. Medroso."},
-        {id:"patrick", name:"Patrick McKinney", req:"Tatuar Esporte. Popular."},
-        {id:"akers", name:"Ten. Akers", req:"Tatuar Bandeira. Militar."},
-        {id:"turnbow", name:"Derek Turnbow", req:"Tatuar Alvo. Agente."}
-    ].map(c => ({
-        ...c,
-        img: `${c.name}.jpg`, // Tenta local
-        fallback: `https://ui-avatars.com/api/?name=${c.name.replace(' ','+')}&background=random&size=128`, // Fallback
-        prompt: `Você é ${c.name}. Desejo: ${c.req}.`
-    }));
+    // === BASE DE DADOS COMPLETA (48 Personagens) ===
+    const ROSTER_RAW = [
+        "Eleven|Tatuar 011 ou Waffle|Tímida, fala pouco, direta.",
+        "Mike Wheeler|Tatuar D20 (RPG)|Líder, protetor, fala muito.",
+        "Dustin Henderson|Tatuar Never Ending Story|Nerd, usa gírias, empolgado.",
+        "Lucas Sinclair|Tatuar Estilingue|Cético, realista, desconfiado.",
+        "Will Byers|Tatuar Mind Flayer|Quieto, artístico, sensível.",
+        "Max Mayfield|Tatuar Skate|Sarcástica, fechada, 'zoeira'.",
+        "Steve Harrington|Tatuar Taco com Pregos|Vaidoso, tenta ser cool, 'babá'.",
+        "Nancy Wheeler|Tatuar Revólver|Investigativa, séria, focada.",
+        "Jonathan Byers|Tatuar Câmera|Introvertido, esquisito, observador.",
+        "Joyce Byers|Tatuar Luzes de Natal|Ansiosa, nervosa, preocupada com higiene.",
+        "Jim Hopper|Cobrir cicatriz de batalha|Rabugento, impaciente, grosso.",
+        "Robin Buckley|Tatuar Tuba|Tagarela, fala rápido, confusa.",
+        "Erica Sinclair|Piercing Orelha|Exigente, capitalista, quer VIP.",
+        "Murray Bauman|Tatuar Código Russo|Paranoico, acha que tem escuta.",
+        "Billy Hargrove|Tatuar Caveira|Agressivo, flerta, perigoso.",
+        "Eddie Munson|Tatuar Hellfire Club|Metaleiro, teatral, dramático.",
+        "Bob Newby|Tatuar Super-Herói|Gente boa, nerd raiz, simpático.",
+        "Dr. Martin Brenner|Tatuar Número de Série|Frio, calculista, manipulador.",
+        "Dr. Sam Owens|Tatuar Símbolo Discreto|Diplomático, burocrático.",
+        "Barb Holland|Tatuar Óculos|Insegura, certinha, medrosa.",
+        "Karen Wheeler|Tatuar Taça de Vinho|Flerta, entediada, quer aventura.",
+        "Ted Wheeler|Tatuar Poltrona|Preguiçoso, reclama de preço.",
+        "Holly Wheeler|Tatuar Desenho Infantil|Criança, fofa, inocente.",
+        "Argyle|Tatuar Pizza de Abacaxi|Chapado, relaxado, 'my dude'.",
+        "Dmitri Enzo Antonov|Tatuar Lealdade|Russo, sério, prático.",
+        "Yuri Ismaylov|Tatuar Manteiga de Amendoim|Louco, trapaceiro, ri muito.",
+        "Chrissy Cunningham|Piercing Umbigo|Popular, mas assustada e ansiosa.",
+        "Jason Carver|Tatuar Mascote Time|Arrogante, discurso motivacional.",
+        "Vickie|Tatuar Clarinete|Nervosa, fala rápido igual a Robin.",
+        "Suzie Bingham|Tatuar Constante de Planck|Nerd, canta, apaixonada.",
+        "Sr. Clarke|Tatuar Átomo|Professor, explica tudo, curioso.",
+        "Dra. Kay|Tatuar Molécula|Cientista, técnica, formal.",
+        "Kali (008)|Tatuar Borboleta|Rebelde, punk, mística.",
+        "Alexei|Tatuar Raspadinha de Cereja|Infantil, curioso, sorridente.",
+        "Grigori|Tatuar Militar|Exterminador, não fala, só ameaça.",
+        "Prefeito Larry Kline|Tatuar Bandeira EUA|Corrupto, falso, quer desconto.",
+        "Tenente Coronel Sullivan|Tatuar Alvo|Hostil, militar, autoritário.",
+        "Lonnie Byers|Tatuar Garrafa|Bêbado, grosseiro, quer fiado.",
+        "Terry Ives|Tatuar Girassol|Repete frases, confusa, trágica.",
+        "Claudia Henderson|Tatuar Gato Mews|Mãe coruja, simpática, amorosa.",
+        "Charles Sinclair|Tatuar Jornal|Pai sério, tradicional.",
+        "Sue Sinclair|Tatuar Floral|Mãe calma, elegante.",
+        "Victor Creel|Tatuar Casa Creel|Perturbado, fala do passado.",
+        "Virginia Creel|Tatuar Anjo|Fantasma, etérea, triste.",
+        "Fred Benson|Tatuar Caneta|Jornalista mirim, medroso.",
+        "Patrick McKinney|Tatuar Bola de Basquete|Popular, segue o Jason.",
+        "Tenente Robert Akers|Tatuar Divisa|Militar, obedece ordens.",
+        "Derek Turnbow|Tatuar Arma|Agente secreto, discreto."
+    ];
+
+    // Frases de Abertura Orgânicas (Sorteio)
+    const OPENERS = [
+        "Oi. Me indicaram aqui. Quero saber valores.",
+        "E aí? Tatuagem dói muito? Sou meio sensível.",
+        "Preciso de um orçamento pra ontem. É urgente.",
+        "Olá, boa tarde. Vocês trabalham com realismo?",
+        "Vi o insta de vocês. O traço é firme mesmo?",
+        "Seguinte: Tenho dinheiro na mão. Faz desconto?",
+        "Oi... Tenho uma ideia meio louca. Rola fazer?",
+        "Salve! Quero riscar. Tem horário pra hoje?"
+    ];
+
+    const ROSTER = ROSTER_RAW.map(r => {
+        const [name, req, trait] = r.split('|');
+        const id = name.split(' ')[0].toLowerCase();
+        return { 
+            id, name, req, trait,
+            img: `${name.split(' ')[0]}.jpg`, 
+            fallback: `https://ui-avatars.com/api/?name=${name.replace(' ','+')}&background=25d366&color=fff&size=128`,
+            prompt: `PERSONAGEM: ${name}. PERSONALIDADE: ${trait}. PEDIDO: ${req}.`
+        };
+    });
 
     // === ESTADO ===
     let activeChats = [];
     let currentChatId = null;
-    let timer = 1200;
+    let timer = 1200; // 20 min
     let money = 0;
-    let spawnInt = null;
-
-    // === AUDIO ENGINE ===
+    let pushPending = null;
     let mediaRecorder;
-    let audioChunks = [];
 
-    // === LÓGICA DO JOGO ===
+    // === START ===
     function startGame() {
-        if(!document.getElementById('player-name').value) return alert("Digite seu nome!");
-        
+        const name = document.getElementById('player-name').value;
+        if(!name) { 
+            document.getElementById('player-name').style.borderColor = "#fff";
+            return;
+        }
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('chat-list-screen').classList.remove('hidden');
 
-        // Timer Global
+        // Timer
         setInterval(() => {
             timer--;
             const m = Math.floor(timer/60).toString().padStart(2,'0');
             const s = (timer%60).toString().padStart(2,'0');
             document.getElementById('global-timer').innerText = `${m}:${s}`;
-            if(timer<=0) alert("TEMPO ESGOTADO! Atualize a página.");
+            if(timer<=0) alert("FIM DE TURNO! RECARREGUE.");
         }, 1000);
 
-        // Spawn Inicial e Pressão
+        // Caos Controlado
         spawnClient();
         setTimeout(spawnClient, 2000);
-        
-        spawnInt = setInterval(() => {
-            // Chance de novo cliente a cada 15s
-            if(Math.random() > 0.4) spawnClient();
-        }, 15000);
+        setInterval(() => { if(Math.random()>0.4) spawnClient(); }, 10000); // Frequência média
 
-        setupAudio();
+        setupMic();
     }
 
     function spawnClient() {
@@ -296,29 +340,31 @@
         if(available.length === 0) return;
 
         const char = available[Math.floor(Math.random() * available.length)];
+        const opener = OPENERS[Math.floor(Math.random() * OPENERS.length)];
+        
+        // Personaliza opener com base no personagem (Simples)
+        let finalOpener = opener;
+        if(char.trait.includes("Grosso") || char.trait.includes("Agressivo")) finalOpener = "Escuta aqui. Quero tatuar agora. Tem vaga?";
+        if(char.trait.includes("Tímida") || char.trait.includes("Medrosa")) finalOpener = "Oi... desculpa incomodar... mas queria saber preços.";
+        if(char.trait.includes("Nerd") || char.trait.includes("Cientista")) finalOpener = "Saudações. Preciso de uma arte geometricamente perfeita.";
+
         const newChat = {
             ...char,
             history: [],
             unread: 1,
-            lastMsg: "Oi, gostaria de um orçamento.",
+            lastMsg: finalOpener,
             lastTime: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
             status: "pending"
         };
-        newChat.history.push({role: "model", parts: [{text: newChat.lastMsg}]});
         
+        newChat.history.push({role: "model", parts: [{text: finalOpener}]});
         activeChats.unshift(newChat);
         renderList();
         
-        // Notificação
-        const t = document.getElementById('toast');
-        document.getElementById('toast-title').innerText = char.name;
-        document.getElementById('toast-msg').innerText = "Nova mensagem";
-        document.getElementById('toast-img').src = char.img; 
-        document.getElementById('toast-img').onerror = function(){this.src=char.fallback};
-        t.style.opacity = 1;
-        setTimeout(()=>t.style.opacity=0, 3000);
+        if(currentChatId !== newChat.id) showPush(newChat);
     }
 
+    // === UI ===
     function renderList() {
         const div = document.getElementById('conversations-container');
         div.innerHTML = "";
@@ -331,16 +377,19 @@
             
             const badge = chat.unread > 0 ? `<div class="badge">${chat.unread}</div>` : '';
             const statusIcon = chat.status==='won' ? '✅ ' : (chat.status==='lost' ? '❌ ' : '');
-            
+            let prev = chat.lastMsg;
+            if(prev.includes("SEND_AUDIO")) prev = "🎤 Áudio";
+            if(prev.includes("SEND_REF")) prev = "📷 Foto";
+
             el.innerHTML = `
                 <img src="${chat.img}" onerror="this.src='${chat.fallback}'" class="ci-avatar">
                 <div class="ci-info">
                     <div class="ci-top">
                         <span class="ci-name">${chat.name}</span>
-                        <span class="ci-time">${chat.lastTime}</span>
+                        <span class="ci-time ${chat.unread>0?'active':''}">${chat.lastTime}</span>
                     </div>
                     <div class="ci-bottom">
-                        <span class="ci-msg" style="${chat.unread>0?'color:#fff;font-weight:bold':''}">${statusIcon}${chat.lastMsg}</span>
+                        <span class="ci-msg" style="${chat.unread>0?'color:#fff;font-weight:500':''}">${statusIcon}${prev}</span>
                         ${badge}
                     </div>
                 </div>
@@ -353,13 +402,13 @@
         currentChatId = id;
         const chat = activeChats.find(c => c.id === id);
         chat.unread = 0;
-        
-        // UI
+        renderList();
+
         document.getElementById('chat-list-screen').classList.add('hidden');
-        const screen = document.getElementById('chat-detail-screen');
-        screen.classList.remove('hidden');
-        setTimeout(()=>screen.classList.add('active'), 10);
-        
+        const detail = document.getElementById('chat-detail-screen');
+        detail.classList.remove('hidden');
+        setTimeout(() => detail.classList.add('active'), 10);
+
         document.getElementById('active-name').innerText = chat.name;
         const img = document.getElementById('active-avatar');
         img.src = chat.img; img.onerror = () => img.src = chat.fallback;
@@ -370,153 +419,164 @@
         
         chat.history.forEach(h => {
             const type = h.role === 'user' ? 'outgoing' : 'incoming';
-            let txt = h.parts[0].text;
-            
-            // Renderizadores Especiais
-            if(txt.includes("[FOTO")) txt = '<i class="fas fa-image"></i> Foto Enviada';
-            if(txt.includes("[ÁUDIO]")) txt = '<i class="fas fa-microphone"></i> Áudio Enviado';
-            if(txt.includes("[PLAY_URL:")) {
-                const url = txt.match(/\[PLAY_URL:(.*?)\]/)[1];
-                txt = `<div class="audio-player"><div class="play-icon" onclick="new Audio('${url}').play()"><i class="fas fa-play"></i></div> 0:05</div>`;
-            }
-            if(txt.includes("SEND_REF")) {
-                // Simula imagem de referência tatuagem
-                const keyword = chat.req.split(' ')[1] || 'tattoo';
-                txt = `<img src="https://source.unsplash.com/random/300x300/?tattoo,${keyword}" style="border-radius:10px; margin-top:5px">`;
-            }
-
-            renderMsg(txt, type);
+            renderBubble(h.parts[0].text, type);
         });
-        
-        renderList();
-    }
-
-    function backToList() {
-        const screen = document.getElementById('chat-detail-screen');
-        screen.classList.remove('active');
-        setTimeout(() => {
-            screen.classList.add('hidden');
-            document.getElementById('chat-list-screen').classList.remove('hidden');
-            currentChatId = null;
-        }, 300);
-    }
-
-    function renderMsg(html, type) {
-        const div = document.createElement('div');
-        div.className = `msg ${type}`;
-        div.innerHTML = `${html}<div class="msg-meta">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
-        const area = document.getElementById('messages-area');
-        area.appendChild(div);
         area.scrollTop = area.scrollHeight;
     }
 
-    // === MENSAGENS E IA ===
-    const inp = document.getElementById('msg-input');
-    inp.addEventListener('keypress', e => { if(e.key==='Enter') send(inp.value); });
+    function renderBubble(txt, type) {
+        let content = txt;
+        
+        // Parsers
+        if(txt.includes("[SEND_AUDIO")) {
+            const textToSpeak = txt.split(":")[1].replace("]","").trim();
+            content = `
+                <div class="audio-bubble">
+                    <div class="play-btn" onclick="speak('${textToSpeak}')"><i class="fas fa-play"></i></div>
+                    <div class="audio-track"><div class="audio-progress"></div></div>
+                    <i class="fas fa-microphone audio-mic-icon"></i>
+                </div>`;
+        } else if (txt.includes("[SEND_REF")) {
+             const term = txt.split(":")[1].replace("]","").trim();
+             content = `Referência:<br><img src="https://source.unsplash.com/300x300/?tattoo,${term}" style="border-radius:10px; margin-top:5px">`;
+        } else if (txt.includes("[IMAGEM ENVIADA")) {
+             content = `<i class="fas fa-camera"></i> Foto`;
+        } else if (txt.includes("[ÁUDIO DO VENDEDOR")) {
+             content = `<i class="fas fa-microphone"></i> Áudio enviado`;
+        }
 
-    async function send(text, img=null, audioUrl=null, audioTxt=null) {
+        const div = document.createElement('div');
+        div.className = `msg ${type}`;
+        div.innerHTML = `${content}<span class="msg-time">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} ${type==='outgoing'?'<i class="fas fa-check-double" style="color:#53bdeb"></i>':''}</span>`;
+        document.getElementById('messages-area').appendChild(div);
+    }
+
+    function backToList() {
+        const detail = document.getElementById('chat-detail-screen');
+        detail.classList.remove('active');
+        setTimeout(() => {
+            detail.classList.add('hidden');
+            document.getElementById('chat-list-screen').classList.remove('hidden');
+            currentChatId = null;
+            renderList();
+        }, 250);
+    }
+
+    function showPush(chat) {
+        const p = document.getElementById('push-notification');
+        document.getElementById('push-title').innerText = chat.name;
+        document.getElementById('push-msg').innerText = chat.lastMsg;
+        const img = document.getElementById('push-img');
+        img.src = chat.img; img.onerror = () => img.src = chat.fallback;
+        
+        p.classList.add('show');
+        pushPending = chat.id;
+        
+        // Som
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+        audio.volume = 0.3; audio.play().catch(()=>{});
+        
+        setTimeout(() => p.classList.remove('show'), 4000);
+    }
+
+    window.clickPush = () => {
+        if(pushPending) {
+            document.getElementById('push-notification').classList.remove('show');
+            openChat(pushPending);
+        }
+    }
+
+    // === IA & AUDIO ===
+    const inp = document.getElementById('msg-input');
+    inp.addEventListener('keypress', e => { if(e.key==='Enter') sendText(); });
+
+    async function sendText() {
+        const txt = inp.value.trim();
+        if(!txt) return;
+        inp.value = '';
+        await processMsg(txt, null, null);
+    }
+
+    async function processMsg(text, img, audioTxt) {
         if(!currentChatId) return;
         const chat = activeChats.find(c => c.id === currentChatId);
         
-        // UI Local (User)
-        let display = text;
-        if(img) display = `<img src="${img}">`;
-        if(audioUrl) display = `<div class="audio-player"><div class="play-icon" onclick="new Audio('${audioUrl}').play()"><i class="fas fa-play"></i></div> 0:05</div>`;
+        // UI User
+        let userTxt = text || (img ? "[IMAGEM ENVIADA]" : "[ÁUDIO ENVIADO]");
+        renderBubble(userTxt, 'outgoing');
         
-        renderMsg(display, 'outgoing');
-        inp.value = '';
+        // Histórico
+        const histTxt = audioTxt ? `[ÁUDIO DO VENDEDOR]: "${audioTxt}"` : userTxt;
+        chat.history.push({role: "user", parts: [{text: histTxt}]});
+        chat.lastMsg = "Você: " + (text || "Mídia");
+        renderList();
+        
+        // Move to top
+        activeChats = activeChats.filter(c => c.id !== chat.id);
+        activeChats.unshift(chat);
 
-        // Histórico (Salva URL do áudio para playback futuro)
-        let logTxt = text || ".";
-        if(img) logTxt = "[FOTO]";
-        if(audioUrl) logTxt = `[PLAY_URL:${audioUrl}] [ÁUDIO]: ${audioTxt||'...'}`;
-        
-        chat.history.push({role: "user", parts: [{text: logTxt}]});
-        chat.lastMsg = img ? "📷 Foto" : (audioUrl ? "🎤 Áudio" : text);
-        
         try {
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    message: text,
-                    image: img,
-                    audioTranscript: audioTxt,
-                    characterPrompt: `PERSONAGEM: ${chat.name}. PEDIDO: ${chat.req}`,
-                    history: chat.history
+                    message: text, image: img, audioTranscript: audioTxt,
+                    characterPrompt: chat.prompt, history: chat.history
                 })
             });
             const data = await res.json();
             
-            // Processa Resposta
-            let reply = data.reply;
-            if(reply.includes("[SEND_REF")) {
-                const term = reply.split(':')[1]?.replace(']','').trim() || 'tattoo';
-                reply = reply.replace(/\[.*?\]/, "") + `<br><img src="https://source.unsplash.com/random/300x300/?tattoo,${term}" style="border-radius:10px; margin-top:5px">`;
-            }
-
-            if(currentChatId === chat.id) renderMsg(reply, 'incoming');
-            else showToast(chat.name, data.reply);
+            chat.history.push({role: "model", parts:[{text: data.reply}]});
             
-            chat.history.push({role: "model", parts:[{text: reply}]});
-            chat.lastMsg = data.reply.includes("img") ? "📷 Referência" : data.reply;
-
             if(data.status === 'won' && chat.status !== 'won') {
                 chat.status = 'won';
-                money += (data.deal_value || 0);
-                document.getElementById('total-money').innerText = `R$ ${money}`;
-                alert(`VENDA FECHADA COM ${chat.name}!\n+ R$ ${data.deal_value}`);
+                money += (data.deal_value || 500);
+                document.getElementById('money-display').innerText = `R$ ${money}`;
+                new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3').play().catch(()=>{});
+            } else if (data.status === 'lost') {
+                chat.status = 'lost';
             }
 
-            renderList();
+            if(currentChatId === chat.id) {
+                renderBubble(data.reply, 'incoming');
+            } else {
+                chat.unread++;
+                chat.lastMsg = data.reply;
+                renderList();
+                showPush(chat);
+            }
 
         } catch(e) { console.error(e); }
     }
 
-    // === ÁUDIO REAL & UTILITÁRIOS ===
-    function setupAudio() {
-        const btn = document.getElementById('mic-btn');
-        let chunks = [];
-        
-        if (navigator.mediaDevices) {
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
-                    const audioUrl = URL.createObjectURL(blob);
-                    
-                    // Se tiver speech recognition, usa o texto. Senão manda genérico.
-                    let transcript = "Áudio enviado pelo usuário.";
-                    if('webkitSpeechRecognition' in window) {
-                        const r = new webkitSpeechRecognition();
-                        r.lang = 'pt-BR';
-                        r.onresult = e => send(null, null, audioUrl, e.results[0][0].transcript);
-                        r.start(); // Truque rápido pra pegar o texto do que acabou de falar
-                    } else {
-                        send(null, null, audioUrl, transcript);
-                    }
-                };
-            }).catch(e => console.log("Mic error", e));
-
-            btn.onmousedown = () => { chunks = []; mediaRecorder.start(); btn.classList.add('rec'); }
-            btn.onmouseup = () => { mediaRecorder.stop(); btn.classList.remove('rec'); }
-            
-            // Suporte Touch
-            btn.ontouchstart = (e) => { e.preventDefault(); chunks=[]; mediaRecorder.start(); btn.classList.add('rec'); }
-            btn.ontouchend = (e) => { e.preventDefault(); mediaRecorder.stop(); btn.classList.remove('rec'); }
+    // TTS
+    function speak(text) {
+        if('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'pt-BR'; u.rate = 1.2;
+            window.speechSynthesis.speak(u);
         }
     }
 
-    window.openProfile = () => document.getElementById('profile-modal').classList.add('open');
+    // Mic
+    function setupMic() {
+        const btn = document.getElementById('mic-btn');
+        if('webkitSpeechRecognition' in window) {
+            const r = new webkitSpeechRecognition();
+            r.lang = 'pt-BR';
+            r.onresult = e => processMsg(null, null, e.results[0][0].transcript);
+            btn.onmousedown = btn.ontouchstart = (e) => { e.preventDefault(); r.start(); btn.classList.add('rec'); }
+            btn.onmouseup = btn.ontouchend = (e) => { e.preventDefault(); r.stop(); btn.classList.remove('rec'); }
+        }
+    }
+
     window.sendImage = (el) => {
         const f = el.files[0];
-        if(f) {
-            const r = new FileReader();
-            r.onload = e => send(null, e.target.result);
-            r.readAsDataURL(f);
-        }
+        if(f) { const r=new FileReader(); r.onload=e=>processMsg(null,e.target.result,null); r.readAsDataURL(f); }
     }
+    
+    window.openProfile = () => document.getElementById('profile-modal').classList.add('open');
 </script>
 </body>
 </html>
